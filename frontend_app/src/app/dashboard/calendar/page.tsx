@@ -29,8 +29,8 @@ export default function CalendarPage() {
     const events = applications.flatMap(app => {
         const appEvents = [];
 
-        // Application Sent Event (use dm_sent_date or application_date)
-        const appDate = app.dm_sent_date || app.application_date;
+        // Application Sent Event (use dm_sent_date)
+        const appDate = app.dm_sent_date;
         if (appDate) {
             appEvents.push({
                 id: `app-${app.id}`,
