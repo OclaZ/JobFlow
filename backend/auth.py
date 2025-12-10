@@ -1,6 +1,10 @@
 from datetime import datetime, timedelta
 from typing import Optional
-from jose import JWTError, jwt
+import jwt # pyjwt
+from jwt.algorithms import RSAAlgorithm
+import json
+import httpx
+import os
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
@@ -10,28 +14,34 @@ try:
 except ImportError:
     import models, schemas, database
 
-SECRET_KEY = "YOUR_SUPER_SECRET_KEY_CHANGE_THIS"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+# Config
+CLERK_DOMAIN = "coherent-snapper-65.clerk.accounts.dev" # derived from pk_test
+JWKS_URL = f"https://{CLERK_DOMAIN}/.well-known/jwks.json"
+ALGORITHM = "RS256"
+
+# Cache for JWKS
+jwks_client = jwt.PyJWKClient(JWKS_URL)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
-
-def get_password_hash(password):
-    return pwd_context.hash(password)
-
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+def verify_token(token: str):
+    try:
+        signing_key = jwks_client.get_signing_key_from_jwt(token)
+        payload = jwt.decode(
+            token,
+            signing_key.key,
+            algorithms=[ALGORITHM],
+            options={"verify_aud": False} # Clerk audience might vary
+        )
+        return payload
+    except Exception as e:
+        print(f"Token verification failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 def get_db():
     db = database.SessionLocal()
@@ -41,25 +51,58 @@ def get_db():
         db.close()
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str = payload.get("sub")
-        if email is None:
-            raise credentials_exception
-        token_data = schemas.TokenData(email=email)
-    except JWTError:
-        raise credentials_exception
-    user = db.query(models.User).filter(models.User.email == token_data.email).first()
-    if user is None:
-        raise credentials_exception
+    payload = verify_token(token)
+    
+    # Clerk Payload usually has 'sub' (User ID). Does it have email?
+    # Usually NO, unless customized.
+    # However, we need to map to our local User DB.
+    # Strategy:
+    # 1. Check if we have a user with `auth_provider_id` = sub (Need to add this column? No I have auth_provider="clerk", but no ID column. I used email).
+    # 2. If no ID column, we need email.
+    # 3. If Payload has NO email, we are stuck OR we fetch User info from Clerk Backend API using Secret Key.
+    
+    user_clerk_id = payload.get("sub")
+    email = payload.get("email") # Try getting email
+    
+    if not email:
+        # Fetch from Clerk API
+        async with httpx.AsyncClient() as client:
+            res = await client.get(
+                f"https://api.clerk.com/v1/users/{user_clerk_id}",
+                headers={"Authorization": f"Bearer {os.getenv('CLERK_SECRET_KEY')}"}
+            )
+            if res.status_code == 200:
+                user_data = res.json()
+                # Clerk returns email_addresses list
+                if user_data.get("email_addresses"):
+                    email = user_data["email_addresses"][0]["email_address"]
+                    
+    if not email:
+        raise HTTPException(status_code=400, detail="Could not resolve user email from Clerk")
+
+    # Find or Create User in Local DB
+    user = db.query(models.User).filter(models.User.email == email).first()
+    
+    if not user:
+        # Create new user
+        # Generate random password as placeholder
+        import secrets
+        random_password = secrets.token_urlsafe(16)
+        hashed_password = pwd_context.hash(random_password)
+        
+        user = models.User(
+            email=email,
+            hashed_password=hashed_password,
+            full_name="New User", # We could fetch name from Clerk too
+            role=schemas.UserRole.COLLABORATEUR,
+            auth_provider="clerk",
+            avatar_url=None # Fetch if possible
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        
     return user
 
 async def get_current_active_user(current_user: models.User = Depends(get_current_user)):
-    # if not current_user.is_active:
-    #     raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
