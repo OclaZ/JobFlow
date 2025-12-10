@@ -9,7 +9,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 async function saveApplication(data, token) {
     try {
-        const response = await fetch("http://localhost:8000/applications/", {
+        const response = await fetch("https://job-flow-psi.vercel.app/applications/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
