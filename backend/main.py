@@ -5,7 +5,10 @@ from sqlalchemy.orm import Session
 from typing import List
 import io
 from reportlab.pdfgen import canvas
-from . import crud, models, schemas, auth, database
+try:
+    from . import crud, models, schemas, auth, database
+except ImportError:
+    import crud, models, schemas, auth, database
 
 models.Base.metadata.create_all(bind=database.engine)
 
