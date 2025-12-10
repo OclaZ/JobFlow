@@ -1,7 +1,16 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-export const getAuthToken = () => {
+export const getAuthToken = async () => {
     if (typeof window !== "undefined") {
+        // Try Clerk
+        if ((window as any).Clerk?.session) {
+            try {
+                return await (window as any).Clerk.session.getToken();
+            } catch (e) {
+                console.warn("Failed to get Clerk token", e);
+            }
+        }
+        // Fallback to local storage (Legacy)
         return localStorage.getItem("token");
     }
     return null;
@@ -20,7 +29,7 @@ export const removeAuthToken = () => {
 };
 
 export const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
-    const token = getAuthToken();
+    const token = await getAuthToken();
     const headers = {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
