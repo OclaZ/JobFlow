@@ -66,6 +66,24 @@ export default function LoginPage() {
                     <button type="submit" className="btn btn-primary" style={{ marginTop: "1rem" }}>
                         Sign In
                     </button>
+
+                    <div style={{ display: "flex", alignItems: "center", margin: "1rem 0" }}>
+                        <div style={{ flex: 1, height: "1px", background: "var(--card-border)" }}></div>
+                        <span style={{ padding: "0 10px", color: "var(--muted-foreground)", fontSize: "0.875rem" }}>OR</span>
+                        <div style={{ flex: 1, height: "1px", background: "var(--card-border)" }}></div>
+                    </div>
+
+                    <a href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/auth/login/google`}
+                        className="btn"
+                        style={{ background: "#DB4437", color: "white", textAlign: "center", textDecoration: "none", marginBottom: "0.5rem" }}>
+                        Continue with Google
+                    </a>
+
+                    <a href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/auth/login/linkedin`}
+                        className="btn"
+                        style={{ background: "#0077B5", color: "white", textAlign: "center", textDecoration: "none" }}>
+                        Continue with LinkedIn
+                    </a>
                 </form>
                 <div style={{ marginTop: "1.5rem", textAlign: "center", fontSize: "0.875rem" }}>
                     Don't have an account? <a href="/register" style={{ color: "var(--primary)" }}>Register</a>
