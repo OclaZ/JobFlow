@@ -55,7 +55,7 @@ export default function DashboardPage() {
                     className="btn btn-primary"
                     onClick={() => {
                         const token = localStorage.getItem("token");
-                        fetch("http://localhost:8000/users/me/report", {
+                        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/me/report`, {
                             headers: { Authorization: `Bearer ${token}` }
                         })
                             .then(res => res.blob())
