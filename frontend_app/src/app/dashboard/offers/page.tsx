@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api";
 import { JobOffer, Application } from "@/types";
 import { motion } from "framer-motion";
-import { Search, Plus, ExternalLink, CheckCircle, Clock, Trash2, Send } from "lucide-react";
+import { Search, Plus, ExternalLink, CheckCircle, Send } from "lucide-react";
 
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -62,17 +62,6 @@ export default function JobOffersPage() {
         } catch (error) {
             console.error("Failed to update status", error);
             alert("Failed to update status");
-        }
-    };
-
-    const handleDelete = async (id: number) => {
-        if (!confirm("Are you sure you want to delete this offer?")) return;
-        try {
-            await apiRequest(`/job_offers/${id}`, { method: "DELETE" });
-            setOffers(offers.filter(o => o.id !== id));
-        } catch (error) {
-            console.error("Failed to delete offer", error);
-            alert("Failed to delete offer");
         }
     };
 
@@ -146,7 +135,6 @@ export default function JobOffersPage() {
                             <th style={{ padding: "1rem" }}>Status (Owner)</th>
                             <th style={{ padding: "1rem" }}>My Application</th>
                             <th style={{ padding: "1rem" }}>Date</th>
-                            <th style={{ padding: "1rem" }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -214,15 +202,6 @@ export default function JobOffersPage() {
                                         )}
                                     </td>
                                     <td style={{ padding: "1rem" }}>{offer.application_date || "-"}</td>
-                                    <td style={{ padding: "1rem" }}>
-                                        <button
-                                            onClick={() => handleDelete(offer.id)}
-                                            style={{ color: "var(--destructive)", background: "none", border: "none", cursor: "pointer" }}
-                                            title={t("delete")}
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </td>
                                 </motion.tr>
                             );
                         })}

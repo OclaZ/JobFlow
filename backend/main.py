@@ -73,10 +73,13 @@ def update_job_offer(job_offer_id: int, job_offer: schemas.JobOfferCreate, db: S
 
 @app.delete("/job_offers/{job_offer_id}", response_model=schemas.JobOffer)
 def delete_job_offer(job_offer_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_active_user)):
-    db_job_offer = crud.delete_job_offer(db, job_offer_id, current_user.id)
-    if db_job_offer is None:
-        raise HTTPException(status_code=404, detail="Job offer not found or you don't have permission to delete it")
-    return db_job_offer
+    # Global Job Offers should not be deleted as they are shared resources.
+    # Only Admin should potentially be able to, but for now we block it for safety.
+    raise HTTPException(status_code=403, detail="Deleting global job offers is not allowed.")
+    # db_job_offer = crud.delete_job_offer(db, job_offer_id, current_user.id)
+    # if db_job_offer is None:
+    #     raise HTTPException(status_code=404, detail="Job offer not found or you don't have permission to delete it")
+    # return db_job_offer
 
 @app.post("/job_offers/{job_offer_id}/track", response_model=schemas.Application)
 def track_job_offer(job_offer_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_active_user)):
