@@ -105,8 +105,11 @@ function scrapeJobDetails() {
     let title = "";
     let company = "";
 
+    // Helper to clean text
+    const clean = (text) => text ? text.replace(/\n/g, ' ').trim() : "";
+
     if (url.includes("linkedin.com")) {
-        // LinkedIn - try multiple selectors
+        // LinkedIn
         title = document.querySelector(".job-details-jobs-unified-top-card__job-title")?.innerText ||
             document.querySelector(".jobs-unified-top-card__job-title")?.innerText ||
             document.querySelector("h1.t-24")?.innerText ||
@@ -115,13 +118,71 @@ function scrapeJobDetails() {
             document.querySelector(".jobs-unified-top-card__company-name")?.innerText ||
             document.querySelector(".jobs-unified-top-card__subtitle-primary-grouping a")?.innerText ||
             document.querySelector("a.ember-view.t-black.t-normal")?.innerText || "";
-        company = company.trim().split('\n')[0]; // Clean up
+
     } else if (url.includes("indeed.com")) {
         // Indeed
         title = document.querySelector(".jobsearch-JobInfoHeader-title")?.innerText ||
             document.querySelector("h1")?.innerText || "";
         company = document.querySelector("[data-company-name='true']")?.innerText ||
             document.querySelector(".jobsearch-InlineCompanyRating-companyHeader")?.innerText || "";
+
+    } else if (url.includes("welcometothejungle.com") || url.includes("wttj.co")) {
+        // Welcome to the Jungle
+        title = document.querySelector("h1")?.innerText ||
+            document.querySelector('[data-testid="job-header-title"]')?.innerText || "";
+        company = document.querySelector("h2")?.innerText ||
+            document.querySelector('[data-testid="job-header-organization-link"]')?.innerText || "";
+
+    } else if (url.includes("hellowork.com")) {
+        // HelloWork
+        title = document.querySelector('h1[data-cy="jobTitle"]')?.innerText ||
+            document.querySelector("h1")?.innerText || "";
+        company = document.querySelector('.offer-hero-company-name')?.innerText ||
+            document.querySelector('span[data-cy="companyName"]')?.innerText || "";
+
+    } else if (url.includes("glassdoor")) {
+        // Glassdoor
+        title = document.querySelector('[data-test="job-title"]')?.innerText ||
+            document.querySelector("h1")?.innerText || "";
+        company = document.querySelector('[data-test="employer-name"]')?.innerText || "";
+
+    } else if (url.includes("apec.fr")) {
+        // APEC
+        title = document.querySelector('h1')?.innerText || "";
+        company = document.querySelector('.card-offer__company')?.innerText || "";
+    }
+
+    // Fallback: Open Graph Metadata
+    if (!title) {
+        title = document.querySelector('meta[property="og:title"]')?.content || document.title || "";
+    }
+    if (!company) {
+        company = document.querySelector('meta[property="og:site_name"]')?.content || "";
+    }
+
+    // Fallback: Generic H1
+    if (!title || title.length > 100) { // If title is likely a full page title, try H1
+        const h1 = document.querySelector("h1");
+        if (h1) title = h1.innerText;
+    }
+
+    // Clean up
+    title = clean(title);
+    company = clean(company);
+
+    // If company is still unknown, try to guess from title if formatted like "Role at Company" or "Role - Company"
+    if (!company || company === "Unknown Company") {
+        if (title.includes(" at ")) {
+            const parts = title.split(" at ");
+            if (parts.length > 1) company = parts[parts.length - 1];
+        } else if (title.includes(" - ")) {
+            const parts = title.split(" - ");
+            if (parts.length > 1) {
+                // Check if the last part is not a location or job type (heuristic)
+                const last = parts[parts.length - 1];
+                if (last.length < 30) company = last;
+            }
+        }
     }
 
     return {

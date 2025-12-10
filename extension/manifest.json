@@ -10,8 +10,8 @@
     ],
     "host_permissions": [
         "http://localhost:8000/*",
-        "https://www.linkedin.com/*",
-        "https://www.indeed.com/*"
+        "http://*/*",
+        "https://*/*"
     ],
     "action": {
         "default_popup": "popup.html"
