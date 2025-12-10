@@ -41,24 +41,26 @@ app.add_middleware(
 oauth = OAuth()
 
 # Google
-oauth.register(
-    name='google',
-    client_id=os.getenv('GOOGLE_CLIENT_ID'),
-    client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
-    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-    client_kwargs={'scope': 'openid email profile'}
-)
+if os.getenv('GOOGLE_CLIENT_ID') and os.getenv('GOOGLE_CLIENT_SECRET'):
+    oauth.register(
+        name='google',
+        client_id=os.getenv('GOOGLE_CLIENT_ID'),
+        client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
+        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+        client_kwargs={'scope': 'openid email profile'}
+    )
 
 # LinkedIn
-oauth.register(
-    name='linkedin',
-    client_id=os.getenv('LINKEDIN_CLIENT_ID'),
-    client_secret=os.getenv('LINKEDIN_CLIENT_SECRET'),
-    api_base_url='https://api.linkedin.com/v2/',
-    access_token_url='https://www.linkedin.com/oauth/v2/accessToken',
-    authorize_url='https://www.linkedin.com/oauth/v2/authorization',
-    client_kwargs={'scope': 'openid profile email'} # OIDC scopes
-)
+if os.getenv('LINKEDIN_CLIENT_ID') and os.getenv('LINKEDIN_CLIENT_SECRET'):
+    oauth.register(
+        name='linkedin',
+        client_id=os.getenv('LINKEDIN_CLIENT_ID'),
+        client_secret=os.getenv('LINKEDIN_CLIENT_SECRET'),
+        api_base_url='https://api.linkedin.com/v2/',
+        access_token_url='https://www.linkedin.com/oauth/v2/accessToken',
+        authorize_url='https://www.linkedin.com/oauth/v2/authorization',
+        client_kwargs={'scope': 'openid profile email'} # OIDC scopes
+    )
 
 # Dependency
 def get_db():
