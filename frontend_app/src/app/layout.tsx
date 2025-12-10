@@ -21,20 +21,24 @@ export const metadata: Metadata = {
 
 import { LanguageProvider } from "@/components/LanguageProvider";
 
+import { ClerkProvider } from '@clerk/nextjs';
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <LanguageProvider>
-          <ThemeProvider defaultTheme="light" storageKey="tre-theme">
-            {children}
-          </ThemeProvider>
-        </LanguageProvider>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" suppressHydrationWarning>
+        <body className={`${geistSans.variable} ${geistMono.variable}`}>
+          <LanguageProvider>
+            <ThemeProvider defaultTheme="light" storageKey="tre-theme">
+              {children}
+            </ThemeProvider>
+          </LanguageProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
