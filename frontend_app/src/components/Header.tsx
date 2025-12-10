@@ -5,10 +5,23 @@ import { ThemeToggle } from "./ThemeToggle";
 import { LiveClock } from "./LiveClock";
 import { useLanguage } from "./LanguageProvider";
 import { DailyGoal } from "./DailyGoal";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { apiRequest } from "@/lib/api";
 
 export default function Header() {
     const pathname = usePathname();
     const { language, setLanguage } = useLanguage();
+    const [avatar, setAvatar] = useState<string | null>(null);
+
+    useEffect(() => {
+        // Fetch users avatar
+        apiRequest("/users/me")
+            .then(user => {
+                if (user.avatar_url) setAvatar(user.avatar_url);
+            })
+            .catch(() => { }); // Ignore error on header
+    }, []);
 
     // Helper to get a readable title from the path
     const getTitle = () => {
@@ -75,6 +88,21 @@ export default function Header() {
 
                 <div style={{ width: "1px", height: "24px", background: "var(--card-border)" }}></div>
                 <ThemeToggle />
+
+                <Link href="/dashboard/profile" style={{ display: "block", textDecoration: "none" }}>
+                    <div style={{
+                        width: "40px", height: "40px", borderRadius: "50%",
+                        border: "2px solid var(--primary)", overflow: "hidden",
+                        background: "var(--secondary)", display: "flex", alignItems: "center", justifyContent: "center",
+                        cursor: "pointer"
+                    }}>
+                        {avatar ? (
+                            <img src={avatar} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        ) : (
+                            <span style={{ fontSize: "1rem" }}>👤</span>
+                        )}
+                    </div>
+                </Link>
             </div>
         </header>
     );
