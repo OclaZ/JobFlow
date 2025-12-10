@@ -106,9 +106,9 @@ export default function ApplicationsPage() {
                         <tr style={{ borderBottom: "1px solid var(--card-border)" }}>
                             <th style={{ padding: "1rem" }}>{t("company")}</th>
                             <th style={{ padding: "1rem" }}>{t("position")}</th>
-                            <th style={{ padding: "1rem" }}>{t("type")}</th>
-                            <th style={{ padding: "1rem" }}>Follow-up J+5</th>
-                            <th style={{ padding: "1rem" }}>Follow-up J+15</th>
+                            <th style={{ padding: "1rem" }}>{t("status")}</th>
+                            <th style={{ padding: "1rem" }}>{t("recruiter")}</th>
+                            <th style={{ padding: "1rem" }}>{t("offerLink")}</th>
                             <th style={{ padding: "1rem" }}>Actions</th>
                         </tr>
                     </thead>
@@ -144,8 +144,14 @@ export default function ApplicationsPage() {
                                         <option value="Refusé">{t("rejected")}</option>
                                     </select>
                                 </td>
-                                <td style={{ padding: "1rem" }}>{app.follow_up_5_date || "-"}</td>
-                                <td style={{ padding: "1rem" }}>{app.follow_up_15_date || "-"}</td>
+                                <td style={{ padding: "1rem" }}>{app.recruiter_name || "-"}</td>
+                                <td style={{ padding: "1rem" }}>
+                                    {app.offer_link ? (
+                                        <a href={app.offer_link} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: "0.25rem", color: "var(--primary)" }}>
+                                            View
+                                        </a>
+                                    ) : "-"}
+                                </td>
                                 <td style={{ padding: "1rem" }}>
                                     <button
                                         onClick={() => handleDelete(app.id)}

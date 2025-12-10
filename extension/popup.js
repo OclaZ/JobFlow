@@ -145,6 +145,10 @@ function scrapeJobDetails() {
         title = document.querySelector('[data-test="job-title"]')?.innerText ||
             document.querySelector("h1")?.innerText || "";
         company = document.querySelector('[data-test="employer-name"]')?.innerText || "";
+        // Glassdoor sometimes puts "Company Name" inside the div, strip rating if present
+        if (company) {
+            company = company.split('\n')[0];
+        }
 
     } else if (url.includes("apec.fr")) {
         // APEC

@@ -42,6 +42,8 @@ export const translations = {
         name: "Name",
         status: "Status",
         connected: "Connected",
+        recruiter: "Recruiter",
+        offerLink: "Offer Link",
     },
     fr: {
         dashboard: "Tableau de bord",
@@ -84,5 +86,7 @@ export const translations = {
         name: "Nom",
         status: "Statut",
         connected: "Connecté",
+        recruiter: "Recruteur",
+        offerLink: "Lien Offre",
     }
 };
