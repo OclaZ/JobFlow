@@ -27,7 +27,7 @@ export default function RegisterPage() {
             router.push("/login?registered=true");
         } catch (err: any) {
             console.error(err);
-            setError("Registration failed. Email might be taken.");
+            setError(err.message || "Registration failed. Email might be taken.");
         }
     };
 
