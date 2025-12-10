@@ -1,7 +1,10 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Date, Float, Enum
 from sqlalchemy.orm import relationship
 import enum
-from .database import Base
+try:
+    from .database import Base
+except ImportError:
+    from database import Base
 
 class UserRole(str, enum.Enum):
     ADMIN = "admin"

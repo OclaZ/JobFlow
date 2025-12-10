@@ -5,7 +5,10 @@ from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from . import models, schemas, database
+try:
+    from . import models, schemas, database
+except ImportError:
+    import models, schemas, database
 
 SECRET_KEY = "YOUR_SUPER_SECRET_KEY_CHANGE_THIS"
 ALGORITHM = "HS256"
