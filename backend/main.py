@@ -60,21 +60,22 @@ def create_job_offer(job_offer: schemas.JobOfferCreate, db: Session = Depends(ge
     return crud.create_job_offer(db=db, job_offer=job_offer, user_id=current_user.id)
 
 @app.get("/job_offers/", response_model=List[schemas.JobOffer])
-def read_job_offers(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_active_user)):
-    return crud.get_job_offers(db, user_id=current_user.id, skip=skip, limit=limit)
+def read_job_offers(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    # Note: Job offers are now visible to all users
+    return crud.get_job_offers(db, skip=skip, limit=limit)
 
 @app.put("/job_offers/{job_offer_id}", response_model=schemas.JobOffer)
 def update_job_offer(job_offer_id: int, job_offer: schemas.JobOfferCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_active_user)):
     db_job_offer = crud.update_job_offer(db, job_offer_id, job_offer, current_user.id)
     if db_job_offer is None:
-        raise HTTPException(status_code=404, detail="Job offer not found")
+        raise HTTPException(status_code=404, detail="Job offer not found or you don't have permission to edit it")
     return db_job_offer
 
 @app.delete("/job_offers/{job_offer_id}", response_model=schemas.JobOffer)
 def delete_job_offer(job_offer_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_active_user)):
     db_job_offer = crud.delete_job_offer(db, job_offer_id, current_user.id)
     if db_job_offer is None:
-        raise HTTPException(status_code=404, detail="Job offer not found")
+        raise HTTPException(status_code=404, detail="Job offer not found or you don't have permission to delete it")
     return db_job_offer
 
 # Recruiters

@@ -16,11 +16,11 @@ def create_user(db: Session, user: schemas.UserCreate):
     return db_user
 
 # Job Offer CRUD
-def get_job_offers(db: Session, user_id: int, skip: int = 0, limit: int = 100):
-    return db.query(models.JobOffer).filter(models.JobOffer.user_id == user_id).offset(skip).limit(limit).all()
+def get_job_offers(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.JobOffer).offset(skip).limit(limit).all()
 
-def get_job_offer(db: Session, job_offer_id: int, user_id: int):
-    return db.query(models.JobOffer).filter(models.JobOffer.id == job_offer_id, models.JobOffer.user_id == user_id).first()
+def get_job_offer(db: Session, job_offer_id: int):
+    return db.query(models.JobOffer).filter(models.JobOffer.id == job_offer_id).first()
 
 def create_job_offer(db: Session, job_offer: schemas.JobOfferCreate, user_id: int):
     db_job_offer = models.JobOffer(**job_offer.dict(), user_id=user_id)
@@ -30,17 +30,24 @@ def create_job_offer(db: Session, job_offer: schemas.JobOfferCreate, user_id: in
     return db_job_offer
 
 def update_job_offer(db: Session, job_offer_id: int, job_offer: schemas.JobOfferCreate, user_id: int):
-    db_job_offer = get_job_offer(db, job_offer_id, user_id)
+    db_job_offer = get_job_offer(db, job_offer_id)
     if db_job_offer:
-        for key, value in job_offer.dict().items():
-            setattr(db_job_offer, key, value)
-        db.commit()
-        db.refresh(db_job_offer)
+        # Check if user owns it or if we want to allow editing global offers (assuming creator can edit)
+        # For now, let's allow the operation if the user is the owner, OR maybe just allow it since it's global?
+        # The original code enforced ownership. Let's keep strict ownership for editing for safety,
+        # unless user wants collaborative editing. "visible to all" implies read access.
+        # So check user_id if we want modification rights. 
+        # But get_job_offer above removed user_id check. Let's re-add a check here or use a helper.
+        if db_job_offer.user_id == user_id: 
+            for key, value in job_offer.dict().items():
+                setattr(db_job_offer, key, value)
+            db.commit()
+            db.refresh(db_job_offer)
     return db_job_offer
 
 def delete_job_offer(db: Session, job_offer_id: int, user_id: int):
-    db_job_offer = get_job_offer(db, job_offer_id, user_id)
-    if db_job_offer:
+    db_job_offer = get_job_offer(db, job_offer_id)
+    if db_job_offer and db_job_offer.user_id == user_id:
         db.delete(db_job_offer)
         db.commit()
     return db_job_offer
@@ -113,10 +120,40 @@ def get_application(db: Session, application_id: int, user_id: int):
     return db.query(models.Application).filter(models.Application.id == application_id, models.Application.user_id == user_id).first()
 
 def create_application(db: Session, application: schemas.ApplicationCreate, user_id: int):
+    # 1. Create the Application (Private)
     db_application = models.Application(**application.dict(), user_id=user_id)
     db.add(db_application)
+    
+    # 2. Create the Job Offer (Public/Shared)
+    # Determine platform
+    platform = "Web"
+    if application.offer_link:
+        if "linkedin.com" in application.offer_link:
+            platform = "LinkedIn"
+        elif "indeed.com" in application.offer_link:
+            platform = "Indeed"
+        elif "wttj" in application.offer_link or "welcometothejungle" in application.offer_link:
+            platform = "WTTJ"
+            
+    from datetime import date
+    
+    db_job_offer = models.JobOffer(
+        user_id=user_id,
+        platform=platform,
+        type="Unknown", # Default
+        registration_done=False,
+        offer_title=application.position,
+        offer_link=application.offer_link,
+        save_date=date.today(),
+        application_sent=True, # Since we allow creating an application, we assume it's applied/in progress
+        application_date=date.today(),
+        status=application.final_status
+    )
+    db.add(db_job_offer)
+    
     db.commit()
     db.refresh(db_application)
+    # We don't necessarily need to return the job offer, just the application as expected by the endpoint
     return db_application
 
 def update_application(db: Session, application_id: int, application: schemas.ApplicationCreate, user_id: int):
