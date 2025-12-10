@@ -1,0 +1,86 @@
+/* FullCalendar Customization for LinkedIn Theme */
+
+:root {
+    --fc-border-color: var(--card-border);
+    --fc-button-text-color: var(--primary-foreground);
+    --fc-button-bg-color: var(--primary);
+    --fc-button-border-color: var(--primary);
+    --fc-button-hover-bg-color: #004182;
+    --fc-button-hover-border-color: #004182;
+    --fc-button-active-bg-color: #004182;
+    --fc-button-active-border-color: #004182;
+
+    --fc-event-bg-color: var(--primary);
+    --fc-event-border-color: var(--primary);
+    --fc-event-text-color: #fff;
+
+    --fc-page-bg-color: var(--card-bg);
+    --fc-neutral-bg-color: var(--secondary);
+    --fc-neutral-text-color: var(--muted-foreground);
+    --fc-today-bg-color: rgba(10, 102, 194, 0.05);
+}
+
+.fc {
+    font-family: 'Inter', sans-serif;
+    color: var(--foreground);
+}
+
+.fc-toolbar-title {
+    font-size: 1.5rem !important;
+    font-weight: 600;
+}
+
+.fc-button {
+    border-radius: 1.5rem !important;
+    /* Pill shape */
+    font-weight: 600 !important;
+    text-transform: capitalize;
+    padding: 0.6rem 1.25rem !important;
+    /* Increased padding */
+    font-size: 0.95rem !important;
+    margin: 0 0.25rem !important;
+    /* Added margin between buttons */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    /* Subtle shadow */
+}
+
+.fc-col-header-cell-cushion {
+    color: var(--muted-foreground);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 1rem 0 !important;
+}
+
+.fc-daygrid-day-number {
+    color: var(--foreground);
+    font-weight: 500;
+    padding: 0.5rem !important;
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th {
+    border-color: var(--card-border);
+}
+
+/* Event Styling */
+.fc-event {
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] .fc-button-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: var(--background);
+    /* Dark text on light blue button in dark mode */
+}
+
+[data-theme='dark'] .fc-button-primary:hover {
+    background-color: #9dcbfb;
+    border-color: #9dcbfb;
+}
