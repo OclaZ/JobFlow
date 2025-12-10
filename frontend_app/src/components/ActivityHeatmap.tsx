@@ -5,11 +5,8 @@ import CalendarHeatmap from "react-calendar-heatmap";
 import "react-calendar-heatmap/dist/styles.css";
 import { apiRequest } from "@/lib/api";
 import { Tooltip } from "react-tooltip";
-import { useLanguage } from "./LanguageProvider";
-
 export function ActivityHeatmap() {
     const [values, setValues] = useState<{ date: string; count: number }[]>([]);
-    const { t } = useLanguage();
 
     useEffect(() => {
         apiRequest("/applications/")
@@ -47,10 +44,13 @@ export function ActivityHeatmap() {
                     return `color-scale-${Math.min(value.count, 4)}`;
                 }}
                 tooltipDataAttrs={(value: any) => {
+                    if (!value || !value.date) {
+                        return { "data-tooltip-id": "heatmap-tooltip", "data-tooltip-content": "No applications" } as any;
+                    }
                     return {
                         "data-tooltip-id": "heatmap-tooltip",
-                        "data-tooltip-content": value.date ? `${value.date}: ${value.count} applications` : "No applications",
-                    };
+                        "data-tooltip-content": `${value.date}: ${value.count} applications`,
+                    } as any;
                 }}
                 showWeekdayLabels
             />
