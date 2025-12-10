@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, List
-from datetime import date
+from datetime import date, datetime
 from enum import Enum
 
 # User Schemas
@@ -9,10 +9,23 @@ class UserRole(str, Enum):
     MANAGER = "manager"
     COLLABORATEUR = "collaborateur"
 
+class UserCVBase(BaseModel):
+    filename: str
+
+class UserCV(UserCVBase):
+    id: int
+    user_id: int
+    upload_date: datetime
+
+    class Config:
+        orm_mode = True
+
 class UserBase(BaseModel):
     email: str
     full_name: Optional[str] = None
     role: UserRole = UserRole.COLLABORATEUR
+    avatar_url: Optional[str] = None
+    auth_provider: Optional[str] = "local"
 
 class UserCreate(UserBase):
     password: str
@@ -20,6 +33,7 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     is_active: bool = True
+    cvs: List[UserCV] = []
 
     class Config:
         orm_mode = True

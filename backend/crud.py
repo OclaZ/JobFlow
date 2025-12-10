@@ -18,6 +18,35 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_user)
     return db_user
 
+def update_user_avatar(db: Session, user_id: int, avatar_url: str):
+    db_user = get_user(db, user_id)
+    if db_user:
+        db_user.avatar_url = avatar_url
+        db.commit()
+        db.refresh(db_user)
+    return db_user
+
+# User CV CRUD
+def create_user_cv(db: Session, filename: str, file_data: bytes, user_id: int):
+    db_cv = models.UserCV(filename=filename, file_data=file_data, user_id=user_id)
+    db.add(db_cv)
+    db.commit()
+    db.refresh(db_cv)
+    return db_cv
+
+def get_user_cvs(db: Session, user_id: int):
+    return db.query(models.UserCV).filter(models.UserCV.user_id == user_id).all()
+
+def get_user_cv(db: Session, cv_id: int, user_id: int):
+    return db.query(models.UserCV).filter(models.UserCV.id == cv_id, models.UserCV.user_id == user_id).first()
+
+def delete_user_cv(db: Session, cv_id: int, user_id: int):
+    db_cv = get_user_cv(db, cv_id, user_id)
+    if db_cv:
+        db.delete(db_cv)
+        db.commit()
+    return db_cv
+
 from typing import Optional
 
 # Job Offer CRUD

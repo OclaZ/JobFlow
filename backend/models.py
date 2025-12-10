@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Date, Float, Enum
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Date, Float, Enum, LargeBinary, DateTime, func
 from sqlalchemy.orm import relationship
 import enum
 try:
@@ -19,12 +19,26 @@ class User(Base):
     hashed_password = Column(String)
     full_name = Column(String)
     role = Column(Enum(UserRole), default=UserRole.COLLABORATEUR)
-    
+    avatar_url = Column(String, nullable=True)
+    auth_provider = Column(String, default="local") # "local", "google", "linkedin"
+
     # Relationships
     job_offers = relationship("JobOffer", back_populates="owner")
     recruiters = relationship("Recruiter", back_populates="owner")
     linkedin_activities = relationship("LinkedInActivity", back_populates="owner")
     applications = relationship("Application", back_populates="owner")
+    cvs = relationship("UserCV", back_populates="owner")
+
+class UserCV(Base):
+    __tablename__ = "user_cvs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    filename = Column(String)
+    file_data = Column(LargeBinary)
+    upload_date = Column(DateTime, default=func.now())
+
+    owner = relationship("User", back_populates="cvs")
 
 class JobOffer(Base):
     __tablename__ = "job_offers"
