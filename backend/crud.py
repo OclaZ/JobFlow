@@ -15,9 +15,14 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_user)
     return db_user
 
+from typing import Optional
+
 # Job Offer CRUD
-def get_job_offers(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.JobOffer).offset(skip).limit(limit).all()
+def get_job_offers(db: Session, user_id: Optional[int] = None, skip: int = 0, limit: int = 100):
+    query = db.query(models.JobOffer)
+    if user_id is not None:
+        query = query.filter(models.JobOffer.user_id == user_id)
+    return query.offset(skip).limit(limit).all()
 
 def get_job_offer(db: Session, job_offer_id: int):
     return db.query(models.JobOffer).filter(models.JobOffer.id == job_offer_id).first()
