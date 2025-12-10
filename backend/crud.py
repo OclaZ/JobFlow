@@ -57,6 +57,43 @@ def delete_job_offer(db: Session, job_offer_id: int, user_id: int):
         db.commit()
     return db_job_offer
 
+def track_job_offer(db: Session, job_offer_id: int, user_id: int):
+    # 1. Get the global offer
+    offer = get_job_offer(db, job_offer_id)
+    if not offer:
+        return None
+        
+    # 2. Check overlap (simple check by link or title+company)
+    # We don't have company in JobOffer explicitly sometimes, just title/link.
+    # Check by Offer Link if exists
+    existing_q = db.query(models.Application).filter(models.Application.user_id == user_id)
+    if offer.offer_link:
+        existing = existing_q.filter(models.Application.offer_link == offer.offer_link).first()
+        if existing:
+            return existing
+            
+    # 3. Create Application
+    # We need to map JobOffer fields to Application fields
+    # JobOffer: offer_title, offer_link, platform
+    # Application: position, offer_link, company (unknown), final_status
+    
+    from datetime import date
+    
+    new_app = models.Application(
+        user_id=user_id,
+        company="Unknown (From Global Offer)", # Placeholder as JobOffer doesn't strictly have Company column in models.py (Wait, let me check models.py)
+        # Checking models.py from Step 134: JobOffer has offer_title, offer_link, platform, type, etc. NO Company column.
+        position=offer.offer_title,
+        offer_link=offer.offer_link,
+        company_link=offer.profile_link,
+        final_status="Applied", # Assume if we track it, we applied or are interested
+        dm_sent_date=None
+    )
+    db.add(new_app)
+    db.commit()
+    db.refresh(new_app)
+    return new_app
+
 # Recruiter CRUD
 def get_recruiters(db: Session, user_id: int, skip: int = 0, limit: int = 100):
     return db.query(models.Recruiter).filter(models.Recruiter.user_id == user_id).offset(skip).limit(limit).all()

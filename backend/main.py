@@ -78,6 +78,13 @@ def delete_job_offer(job_offer_id: int, db: Session = Depends(get_db), current_u
         raise HTTPException(status_code=404, detail="Job offer not found or you don't have permission to delete it")
     return db_job_offer
 
+@app.post("/job_offers/{job_offer_id}/track", response_model=schemas.Application)
+def track_job_offer(job_offer_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_active_user)):
+    application = crud.track_job_offer(db, job_offer_id, current_user.id)
+    if application is None:
+        raise HTTPException(status_code=404, detail="Job offer not found")
+    return application
+
 # Recruiters
 @app.post("/recruiters/", response_model=schemas.Recruiter)
 def create_recruiter(recruiter: schemas.RecruiterCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_active_user)):
