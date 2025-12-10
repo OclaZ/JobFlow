@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api";
-import { ResponsiveContainer, FunnelChart, Funnel, LabelList, Tooltip, Cell } from "recharts";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList, Tooltip, Cell } from "recharts";
 import { useLanguage } from "./LanguageProvider";
 
-const COLORS = ['#3b82f6', '#eab308', '#22c55e', '#ef4444']; // Blue, Yellow, Green, Red
+
 
 export function ApplicationFunnel() {
     const [data, setData] = useState<any[]>([]);
@@ -34,25 +34,26 @@ export function ApplicationFunnel() {
     return (
         <div style={{ width: "100%", height: 300 }}>
             <ResponsiveContainer width="100%" height="100%">
-                <FunnelChart>
+                <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--card-border)" />
+                    <XAxis type="number" stroke="var(--muted-foreground)" hide />
+                    <YAxis type="category" dataKey="name" stroke="var(--foreground)" width={100} tick={{ fontSize: 12 }} />
                     <Tooltip
+                        cursor={{ fill: 'transparent' }}
                         contentStyle={{
                             backgroundColor: 'var(--card-bg)',
                             borderColor: 'var(--card-border)',
                             borderRadius: 'var(--radius)',
                             color: 'var(--foreground)'
                         }}
-                        itemStyle={{ color: 'var(--foreground)' }}
                     />
-                    <Funnel
-                        dataKey="value"
-                        data={data}
-                        isAnimationActive
-                    >
-                        <LabelList position="right" fill="var(--foreground)" stroke="none" dataKey="name" />
-                        <LabelList position="center" fill="#fff" stroke="none" dataKey="value" />
-                    </Funnel>
-                </FunnelChart>
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={30}>
+                        {data.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                        <LabelList dataKey="value" position="right" fill="var(--foreground)" />
+                    </Bar>
+                </BarChart>
             </ResponsiveContainer>
         </div>
     );

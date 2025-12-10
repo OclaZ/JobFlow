@@ -13,7 +13,7 @@ export function ActivityHeatmap() {
             .then(apps => {
                 const dateMap = new Map<string, number>();
                 apps.forEach((app: any) => {
-                    const date = app.application_date; // Assuming YYYY-MM-DD
+                    const date = app.dm_sent_date; // Assuming YYYY-MM-DD
                     if (date) {
                         dateMap.set(date, (dateMap.get(date) || 0) + 1);
                     }
