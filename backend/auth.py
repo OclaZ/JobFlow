@@ -63,9 +63,11 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     
     user_clerk_id = payload.get("sub")
     email = payload.get("email") # Try getting email
+    print(f"DEBUG: Token Verified. Sub: {user_clerk_id}, Email in claim: {email}")
     
     if not email:
         # Fetch from Clerk API
+        print(f"DEBUG: Fetching email from Clerk API for user {user_clerk_id}")
         async with httpx.AsyncClient() as client:
             res = await client.get(
                 f"https://api.clerk.com/v1/users/{user_clerk_id}",

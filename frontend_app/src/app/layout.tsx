@@ -29,7 +29,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        baseTheme: undefined, // Or dark if I install it, but for now custom CSS variables are safer if I don't want to install extra package yet.
+        variables: {
+          colorPrimary: '#3b82f6', // Example blue
+          // colorBackground: '#1f2937', 
+        },
+        layout: {
+          socialButtonsPlacement: 'bottom',
+          socialButtonsVariant: 'blockButton',
+        }
+      }}
+    >
       <html lang="en" suppressHydrationWarning>
         <body className={`${geistSans.variable} ${geistMono.variable}`}>
           <LanguageProvider>
