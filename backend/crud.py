@@ -119,7 +119,7 @@ def track_job_offer(db: Session, job_offer_id: int, user_id: int):
         offer_link=offer.offer_link,
         company_link=offer.profile_link,
         final_status="Pending", # Assume if we track it, we applied or are interested
-        dm_sent_date=None
+        dm_sent_date=date.today()
     )
     db.add(new_app)
     db.commit()
