@@ -172,6 +172,10 @@ def delete_linkedin_activity(activity_id: int, db: Session = Depends(get_db), cu
     return db_activity
 
 # Applications
+@app.options("/applications/")
+async def options_applications(request: Request):
+    return Response(status_code=200)
+
 @app.post("/applications/", response_model=schemas.Application)
 def create_application(application: schemas.ApplicationCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_active_user)):
     return crud.create_application(db=db, application=application, user_id=current_user.id)
