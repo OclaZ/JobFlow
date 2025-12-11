@@ -273,10 +273,23 @@ def get_dashboard_stats(db: Session, current_user: models.User):
             
     evolution_data = [{"name": k, "applications": v, "responses": 0} for k, v in sorted(weekly_apps.items())[-5:]]
     
-    # Platform distribution
+    # Platform distribution (Based on Applications)
     platforms = defaultdict(int)
-    for offer in job_offers:
-        platforms[offer.platform] += 1
+    for app in applications:
+        ptype = "Web"
+        link = app.offer_link or app.company_link or ""
+        if "linkedin" in link:
+            ptype = "LinkedIn"
+        elif "indeed" in link:
+            ptype = "Indeed"
+        elif "glassdoor" in link:
+            ptype = "Glassdoor"
+        elif "wttj" in link or "welcometothejungle" in link:
+            ptype = "WTTJ"
+        elif "hellowork" in link:
+            ptype = "HelloWork"
+        
+        platforms[ptype] += 1
     platform_data = [{"name": k, "value": v} for k, v in platforms.items()]
 
     # Upcoming Follow-ups (Next 7 days)

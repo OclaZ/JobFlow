@@ -230,17 +230,29 @@ def generate_report(db: Session = Depends(get_db), current_user: models.User = D
 
 @app.post("/fix-data")
 def fix_data(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_active_user)):
-    # Backfill missing dates in Applications
     import datetime
     today = datetime.date.today()
-    apps = db.query(models.Application).filter(models.Application.dm_sent_date == None).all()
-    count = 0
-    for app in apps:
-        app.dm_sent_date = today # Backfill with today so they show up
-        count += 1
+    
+    # 1. Backfill missing dates
+    apps_no_date = db.query(models.Application).filter(models.Application.dm_sent_date == None).all()
+    count_dates = 0
+    for app in apps_no_date:
+        app.dm_sent_date = today
+        count_dates += 1
+        
+    # 2. Fix "Applied" status to "Pending" (for Kanban)
+    apps_wrong_status = db.query(models.Application).filter(models.Application.final_status == "Applied").all()
+    count_status = 0
+    for app in apps_wrong_status:
+        app.final_status = "Pending"
+        count_status += 1
     
     db.commit()
-    return {"message": f"Fixed {count} applications with missing dates."}
+    return {
+        "message": "Data fixed successfully",
+        "dates_fixed": count_dates,
+        "statuses_fixed": count_status
+    }
 
 @app.get("/auth/{provider}/callback")
 async def auth_callback(provider: str, request: Request, db: Session = Depends(get_db)):
