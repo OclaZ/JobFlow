@@ -6,12 +6,31 @@
     "permissions": [
         "activeTab",
         "scripting",
-        "storage"
+        "storage",
+        "tabs"
     ],
     "host_permissions": [
+        "http://localhost:3000/*",
         "http://localhost:8000/*",
-        "http://*/*",
-        "https://*/*"
+        "https://job-flow-psi.vercel.app/*",
+        "https://*.linkedin.com/*",
+        "https://*.indeed.com/*",
+        "https://*.welcometothejungle.com/*",
+        "https://*.wttj.co/*",
+        "https://*.hellowork.com/*",
+        "https://*.glassdoor.com/*",
+        "https://*.apec.fr/*"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "http://localhost:3000/*",
+                "https://job-flow-psi.vercel.app/*"
+            ],
+            "js": [
+                "token_listener.js"
+            ]
+        }
     ],
     "action": {
         "default_popup": "popup.html"

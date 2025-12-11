@@ -1,15 +1,17 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "save") {
-        saveApplication(request.data, request.token)
+        const apiUrl = request.apiUrl || "https://job-flow-psi.vercel.app";
+        saveApplication(request.data, request.token, apiUrl)
             .then(() => sendResponse({ success: true }))
             .catch((error) => sendResponse({ success: false, error: error.message }));
         return true; // Keep message channel open for async response
     }
 });
 
-async function saveApplication(data, token) {
+async function saveApplication(data, token, baseUrl) {
     try {
-        const response = await fetch("https://job-flow-psi.vercel.app/applications/", {
+        const url = `${baseUrl.replace(/\/$/, "")}/applications/`;
+        const response = await fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -19,7 +21,7 @@ async function saveApplication(data, token) {
         });
 
         if (!response.ok) {
-            const err = await response.json();
+            const err = await response.json().catch(() => ({}));
             throw new Error(err.detail || `Server error: ${response.status}`);
         }
 
