@@ -228,13 +228,19 @@ def generate_report(db: Session = Depends(get_db), current_user: models.User = D
 # Given USER uses Clerk now, these custom endpoints are NOT USED by Clerk frontend component.
 # But I will keep them clean just in case, but nicely formatted.
 
-@app.get("/auth/login/{provider}")
-async def login_oauth(provider: str, request: Request):
-    base_url = os.getenv("NEXT_PUBLIC_API_URL", str(request.base_url).rstrip("/"))
-    if "localhost" not in base_url and not base_url.startswith("https"):
-         base_url = base_url.replace("http://", "https://")
-    redirect_uri = f"{base_url}/auth/{provider}/callback"
-    return await oauth.create_client(provider).authorize_redirect(request, redirect_uri)
+@app.post("/fix-data")
+def fix_data(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_active_user)):
+    # Backfill missing dates in Applications
+    import datetime
+    today = datetime.date.today()
+    apps = db.query(models.Application).filter(models.Application.dm_sent_date == None).all()
+    count = 0
+    for app in apps:
+        app.dm_sent_date = today # Backfill with today so they show up
+        count += 1
+    
+    db.commit()
+    return {"message": f"Fixed {count} applications with missing dates."}
 
 @app.get("/auth/{provider}/callback")
 async def auth_callback(provider: str, request: Request, db: Session = Depends(get_db)):
