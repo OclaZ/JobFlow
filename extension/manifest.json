@@ -33,6 +33,18 @@
             "js": [
                 "token_listener.js"
             ]
+        },
+        {
+            "matches": [
+                "http://localhost:3000/*",
+                "https://job-flow-psi.vercel.app/*",
+                "https://job-flow-zr6z.vercel.app/*"
+            ],
+            "run_at": "document_idle",
+            "world": "MAIN",
+            "js": [
+                "token_reader.js"
+            ]
         }
     ],
     "action": {

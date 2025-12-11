@@ -1,32 +1,7 @@
-// This script runs in the Isolated World
-// We inject a script into the Main World to access window.Clerk
+// This script runs in the ISOLATED World
+// It listens for messages from the MAIN world and saves to storage
 
-const script = document.createElement('script');
-script.textContent = `
-    const sendToken = async () => {
-        if (window.Clerk && window.Clerk.session) {
-            try {
-                const token = await window.Clerk.session.getToken();
-                window.postMessage({ type: "JOBFLOW_CLERK_TOKEN", token: token }, "*");
-            } catch (e) {
-                console.error("JobFlow Extension: Error getting token", e);
-            }
-        }
-    };
-
-    // Check periodically for Clerk to be ready
-    let attempts = 0;
-    const interval = setInterval(() => {
-        if (window.Clerk && window.Clerk.session) {
-            sendToken();
-            clearInterval(interval);
-        }
-        attempts++;
-        if (attempts > 20) clearInterval(interval); // Stop after 20s
-    }, 1000);
-`;
-(document.head || document.documentElement).appendChild(script);
-script.remove();
+console.log("JobFlow listener ready...");
 
 // Listen for the message back from the page
 window.addEventListener("message", (event) => {
