@@ -109,7 +109,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
 async def get_current_active_user(current_user: models.User = Depends(get_current_user)):
     return current_user
 
-async def get_current_admin(current_user: models.User = Depends(get_current_user)):
+async def get_current_admin(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     # Check if role is admin OR if email matches hardcoded super admin
     # For now, let's treat the user 'aslikh.hamza@gmail.com' (from previous context or user email) as admin? 
     # Or just check role.
@@ -122,6 +122,16 @@ async def get_current_admin(current_user: models.User = Depends(get_current_user
         print(f"DEBUG: Checking Admin. User Email: {current_user.email}, ENV ADMIN_EMAIL: {admin_email}, Role: {current_user.role}")
         
         if admin_email and current_user.email.strip().lower() == admin_email.strip().lower():
+            # Auto-promote to Admin in DB to persist this status
+            try:
+                current_user.role = schemas.UserRole.ADMIN
+                db.commit()
+                db.refresh(current_user)
+                print(f"DEBUG: Auto-promoted {current_user.email} to ADMIN")
+            except Exception as e:
+                print(f"DEBUG: Failed to auto-promote user: {e}")
+                # Don't fail the request, just proceed
+            
             return current_user
         
         raise HTTPException(
