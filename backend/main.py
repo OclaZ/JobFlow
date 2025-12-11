@@ -40,7 +40,9 @@ app.add_middleware(SessionMiddleware, secret_key=os.getenv("SECRET_KEY", "supers
 origins = [
     "http://localhost:3000",
     "https://job-flow-psi.vercel.app", # Add production frontend
-    "https://jobflow-frontend.vercel.app" # Alternate
+    "https://jobflow-frontend.vercel.app", # Alternate
+    "https://www.simplonjob.online", # USER Domain
+    "https://simplonjob.online"
 ]
 
 app.add_middleware(
