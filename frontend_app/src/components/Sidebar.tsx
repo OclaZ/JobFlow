@@ -2,9 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { removeAuthToken } from "@/lib/api";
-import { useRouter } from "next/navigation";
-import { ThemeToggle } from "./ThemeToggle";
 import Image from "next/image";
 import {
     LayoutDashboard,
@@ -13,7 +10,6 @@ import {
     Linkedin,
     FileText,
     KanbanSquare,
-    LogOut,
     Calendar
 } from "lucide-react";
 
@@ -21,13 +17,7 @@ import { useLanguage } from "./LanguageProvider";
 
 export default function Sidebar() {
     const pathname = usePathname();
-    const router = useRouter();
     const { t } = useLanguage();
-
-    const handleLogout = () => {
-        removeAuthToken();
-        router.push("/login");
-    };
 
     const links = [
         { href: "/dashboard", label: t("dashboard"), icon: LayoutDashboard },
@@ -89,28 +79,6 @@ export default function Sidebar() {
                     );
                 })}
             </nav>
-
-            <div style={{ borderTop: "1px solid var(--card-border)", paddingTop: "1.5rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <ThemeToggle />
-                <button
-                    onClick={handleLogout}
-                    className="btn"
-                    style={{
-                        background: "var(--destructive)",
-                        color: "var(--destructive-foreground)",
-                        padding: "0.5rem",
-                        borderRadius: "50%",
-                        width: "36px",
-                        height: "36px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center"
-                    }}
-                    title="Logout"
-                >
-                    <LogOut size={18} />
-                </button>
-            </div>
         </aside>
     );
 }

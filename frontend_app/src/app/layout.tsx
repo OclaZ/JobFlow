@@ -31,14 +31,29 @@ export default function RootLayout({
   return (
     <ClerkProvider
       appearance={{
-        baseTheme: undefined, // Or dark if I install it, but for now custom CSS variables are safer if I don't want to install extra package yet.
-        variables: {
-          colorPrimary: '#3b82f6', // Example blue
-          // colorBackground: '#1f2937', 
-        },
         layout: {
           socialButtonsPlacement: 'bottom',
           socialButtonsVariant: 'blockButton',
+        },
+        variables: {
+          colorPrimary: '#0a66c2', // LinkedIn Blue
+          colorTextOnPrimaryBackground: 'white',
+          borderRadius: '0.5rem',
+          fontFamily: 'inherit',
+        },
+        elements: {
+          card: {
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            border: '1px solid #e0e0e0',
+          },
+          formButtonPrimary: {
+            fontSize: '14px',
+            textTransform: 'none',
+            backgroundColor: '#0a66c2',
+            '&:hover': {
+              backgroundColor: '#004182',
+            }
+          }
         }
       }}
     >
