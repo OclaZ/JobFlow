@@ -13,6 +13,7 @@
         "http://localhost:3000/*",
         "http://localhost:8000/*",
         "https://job-flow-psi.vercel.app/*",
+        "https://job-flow-zr6z.vercel.app/*",
         "https://*.linkedin.com/*",
         "https://*.indeed.com/*",
         "https://*.welcometothejungle.com/*",
@@ -25,7 +26,8 @@
         {
             "matches": [
                 "http://localhost:3000/*",
-                "https://job-flow-psi.vercel.app/*"
+                "https://job-flow-psi.vercel.app/*",
+                "https://job-flow-zr6z.vercel.app/*"
             ],
             "run_at": "document_idle",
             "js": [

@@ -1,4 +1,4 @@
-const JOBFLOW_URL = "https://job-flow-psi.vercel.app";
+const JOBFLOW_URL = "https://job-flow-zr6z.vercel.app";
 
 document.addEventListener('DOMContentLoaded', async () => {
     const { clerk_token } = await chrome.storage.local.get('clerk_token');
