@@ -1,26 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiRequest } from "@/lib/api";
+import { useAuth, useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import {
-    Users,
-    Briefcase,
-    FileText,
-    Building2,
-    TrendingUp,
-    Shield
-} from "lucide-react";
-import {
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    CartesianGrid,
     Tooltip,
     ResponsiveContainer,
     PieChart,
     Pie,
     Cell,
+    Legend
 } from "recharts";
 import {
     Users,
@@ -284,8 +273,8 @@ export default function AdminDashboard() {
                                     <td className="p-4 text-slate-200">{u.email}</td>
                                     <td className="p-4">
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${u.role === "admin"
-                                                ? "bg-purple-500/20 text-purple-300"
-                                                : "bg-slate-700 text-slate-300"
+                                            ? "bg-purple-500/20 text-purple-300"
+                                            : "bg-slate-700 text-slate-300"
                                             }`}>
                                             {u.role}
                                         </span>
@@ -309,7 +298,7 @@ export default function AdminDashboard() {
     );
 }
 
-function StatCard({ title, value, icon, color }: { title: string; value: number; icon: React.ReactNode; color: string }) {
+function MetricCard({ title, value, icon, color }: { title: string; value: number; icon: React.ReactNode; color: string }) {
     return (
         <div className={`rounded-xl border p-5 ${color} flex items-center justify-between`}>
             <div>
