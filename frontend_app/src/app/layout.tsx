@@ -15,8 +15,11 @@ const geistMono = Geist_Mono({
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 export const metadata: Metadata = {
-  title: "TRE Dashboard",
-  description: "Advanced Job Application Tracker",
+  title: "JobFlow - Smart Application Tracker",
+  description: "Streamline your job search, track applications, and land your dream job with JobFlow's intelligent dashboard.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 import { LanguageProvider } from "@/components/LanguageProvider";
