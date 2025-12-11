@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: "JobFlow - Smart Application Tracker",
   description: "Streamline your job search, track applications, and land your dream job with JobFlow's intelligent dashboard.",
   icons: {
-    icon: "/icon.svg",
+    icon: "/jobflow_logo.png",
   },
 };
 
