@@ -17,6 +17,8 @@ except ImportError:
 
 models.Base.metadata.create_all(bind=database.engine)
 
+app = FastAPI(title="Dashboard TRE API")
+
 
 
 # Session Middleware is required for Authlib
