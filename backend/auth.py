@@ -108,3 +108,21 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
 
 async def get_current_active_user(current_user: models.User = Depends(get_current_user)):
     return current_user
+
+async def get_current_admin(current_user: models.User = Depends(get_current_user)):
+    # Check if role is admin OR if email matches hardcoded super admin
+    # For now, let's treat the user 'aslikh.hamza@gmail.com' (from previous context or user email) as admin? 
+    # Or just check role.
+    # To bootstrap, I will assume any user with role="admin" is admin.
+    if current_user.role != schemas.UserRole.ADMIN:
+        # Fallback: Check ENV
+        import os
+        admin_email = os.getenv("ADMIN_EMAIL")
+        if admin_email and current_user.email == admin_email:
+            return current_user
+        
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The user doesn't have enough privileges"
+        )
+    return current_user

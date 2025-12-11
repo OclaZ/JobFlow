@@ -324,3 +324,52 @@ def get_dashboard_stats(db: Session, current_user: models.User):
         "platforms": platform_data,
         "upcoming_followups": upcoming_followups
     }
+
+def get_admin_stats(db: Session):
+    total_users = db.query(models.User).count()
+    total_apps = db.query(models.Application).count()
+    total_offers = db.query(models.JobOffer).count()
+    
+    # Unique companies
+    from sqlalchemy import func
+    total_companies = db.query(func.count(func.distinct(models.Application.company))).scalar()
+    
+    # Platforms (All Apps)
+    apps = db.query(models.Application).all()
+    platforms = defaultdict(int)
+    for app in apps:
+        ptype = "Web"
+        link = app.offer_link or app.company_link or ""
+        if "linkedin" in link: ptype = "LinkedIn"
+        elif "indeed" in link: ptype = "Indeed"
+        elif "glassdoor" in link: ptype = "Glassdoor"
+        elif "wttj" in link or "welcometothejungle" in link: ptype = "WTTJ"
+        elif "hellowork" in link: ptype = "HelloWork"
+        platforms[ptype] += 1
+    
+    platforms_list = [{"name": k, "value": v} for k, v in platforms.items()]
+    
+    return {
+        "total_users": total_users,
+        "total_applications": total_apps,
+        "total_offers": total_offers,
+        "total_companies": total_companies,
+        "applications_by_platform": platforms_list,
+        "recent_activity": [] 
+    }
+
+    users = db.query(models.User).all()
+    result = []
+    for u in users:
+        app_count = db.query(models.Application).filter(models.Application.user_id == u.id).count()
+        offer_count = db.query(models.JobOffer).filter(models.JobOffer.user_id == u.id).count()
+        result.append({
+            "id": u.id,
+            "email": u.email,
+            "full_name": u.full_name,
+            "role": u.role,
+            "applications_count": app_count,
+            "offers_count": offer_count,
+            "last_active": "N/A"
+        })
+    return result

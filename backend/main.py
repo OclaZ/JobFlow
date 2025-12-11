@@ -379,3 +379,17 @@ async def download_cv(
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename={cv.filename}"}
     )
+
+# Admin Routes
+try:
+    from . import admin_schemas
+except ImportError:
+    import admin_schemas
+
+@app.get("/admin/stats", response_model=admin_schemas.GlobalStats)
+def get_admin_global_stats(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_admin)):
+    return crud.get_admin_stats(db)
+
+@app.get("/admin/users", response_model=List[admin_schemas.AdminUserOverview])
+def get_admin_users(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_admin)):
+    return crud.get_all_users_overview(db)
