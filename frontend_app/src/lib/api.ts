@@ -28,8 +28,8 @@ export const removeAuthToken = () => {
     }
 };
 
-export const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
-    const token = await getAuthToken();
+export const apiRequest = async (endpoint: string, options: RequestInit = {}, tokenArg?: string | null) => {
+    const token = tokenArg !== undefined ? tokenArg : await getAuthToken();
     const headers = {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
