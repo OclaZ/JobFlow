@@ -17,7 +17,22 @@ except ImportError:
 
 models.Base.metadata.create_all(bind=database.engine)
 
+from sqlalchemy import text
+
 app = FastAPI(title="Dashboard TRE API")
+
+@app.on_event("startup")
+def perform_migrations():
+    try:
+        # Simple auto-migration for missing columns
+        with database.engine.connect() as connection:
+             # Transaction is handled by context manager or we explicit begin
+             with connection.begin():
+                connection.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR"))
+                connection.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS auth_provider VARCHAR DEFAULT 'local'"))
+        print("Startup migration: Schema updated successfully.")
+    except Exception as e:
+        print(f"Startup migration warning: {e}")
 
 # Session Middleware is required for Authlib
 # Use a secret key from env or fallback
