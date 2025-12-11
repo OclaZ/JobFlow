@@ -200,7 +200,8 @@ def create_application(db: Session, application: schemas.ApplicationCreate, user
     
     # 2. Create the Job Offer (Public/Shared)
     # Determine platform
-    Platform = "Web"
+    # Determine platform
+    platform = "Web"
     if application.offer_link:
         if "linkedin.com" in application.offer_link:
             platform = "LinkedIn"
