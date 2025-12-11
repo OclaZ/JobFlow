@@ -119,7 +119,10 @@ async def get_current_admin(current_user: models.User = Depends(get_current_user
         import os
         admin_email = os.getenv("ADMIN_EMAIL")
         
-        print(f"DEBUG: Checking Admin. User Email: {current_user.email}, ENV ADMIN_EMAIL: {admin_email}, Role: {current_user.role}")
+        if not admin_email:
+            print("DEBUG: ADMIN_EMAIL environment variable is NOT SET")
+        else:
+             print(f"DEBUG: Comparing '{current_user.email.strip().lower()}' with '{admin_email.strip().lower()}'")
         
         if admin_email and current_user.email.strip().lower() == admin_email.strip().lower():
             # Auto-promote to Admin in DB to persist this status
