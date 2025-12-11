@@ -19,6 +19,17 @@ models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="Dashboard TRE API")
 
+@app.get("/")
+def read_root():
+    import os
+    admin_email = os.getenv("ADMIN_EMAIL")
+    return {
+        "status": "online",
+        "documentation": "/docs",
+        "admin_email_configured": bool(admin_email),
+        "admin_email_preview": f"{admin_email[:3]}***{admin_email.split('@')[1]}" if admin_email and "@" in admin_email else "Not Set or Invalid"
+    }
+
 
 
 # Session Middleware is required for Authlib

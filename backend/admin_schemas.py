@@ -19,4 +19,4 @@ class AdminUserOverview(BaseModel):
     last_active: Optional[str]  # Just a placeholder for now
 
     class Config:
-        orm_mode = True
+        from_attributes = True
