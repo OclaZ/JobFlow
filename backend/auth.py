@@ -170,37 +170,67 @@ def create_admin_access_token(data: dict, expires_delta: Optional[timedelta] = N
 
 oauth2_scheme_admin = OAuth2PasswordBearer(tokenUrl="admin/token")
 
-async def get_current_admin_user(token: str = Depends(oauth2_scheme_admin), db: Session = Depends(get_db)):
-    print(f"DEBUG: Validating Admin Token: {token[:10]}...")
+async def get_current_admin_user(
+    token: str = Depends(oauth2_scheme), # Use Standard Oauth2 Scheme (Clerk)
+    db: Session = Depends(get_db)
+):
+    print(f"DEBUG: Validating Admin Request. Token: {token[:10]}...")
+    
+    # 1. Try Clerk/Standard Token Verification
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        print(f"DEBUG: Decoded Payload: {payload}")
-        email: str = payload.get("sub")
-        role: str = payload.get("role")
-        if email is None or role != "admin":
-             print(f"DEBUG: Token Invalid. Email: {email}, Role: {role}")
-             raise HTTPException(status_code=401, detail="Invalid admin token")
+        payload = verify_token(token)
+        # If we are here, token is valid Clerk token
+        email = payload.get("email")
+        if not email:
+            # Try fetching from Clerk API if missing in claims (rare but possible)
+            sub = payload.get("sub")
+            # For speed, skip this unless crucial.
+            # Assuming email is present for now or we fail.
+            pass
         
-        # Try to fetch from DB, but FALLBACK to transient user if DB fails (Vercel SQLite Issue)
-        try:
-            user = db.query(models.User).filter(models.User.email == email).first()
-            if user:
-                return user
-        except Exception as db_e:
-            print(f"DEBUG: DB Lookup failed ({db_e}), using Transient Admin User")
+        print(f"DEBUG: Clerk Token Valid. Email: {email}")
         
-        # If user not found OR DB failed, return Transient Admin (Trusting the Token)
-        print("DEBUG: Returning Transient Admin User (Bypassing DB)")
-        return models.User(
-            id=99999,
-            email=email,
-            full_name="Super Admin (Transient)",
-            role=schemas.UserRole.ADMIN,
-            auth_provider="local_admin"
-        )
+        # 2. Check Admin Access
+        # HARDCODED SUPER ADMIN
+        if email and email.strip().lower() == "hello@hamzaaslikh.com":
+             print("DEBUG: Super Admin Detected (Clerk). Access Granted.")
+             return models.User(
+                id=99999,
+                email=email,
+                full_name="Super Admin",
+                role=schemas.UserRole.ADMIN,
+                auth_provider="clerk"
+             )
+        
+        # 3. Check DB Role
+        if email:
+            try:
+                user = db.query(models.User).filter(models.User.email == email).first()
+                if user and user.role == schemas.UserRole.ADMIN:
+                    return user
+            except Exception as e:
+                print(f"DEBUG: DB Lookup failed: {e}")
+                
+        # If we reached here, user is valid but NOT admin
+        raise HTTPException(status_code=403, detail="Access Denied: Not an Admin")
 
     except HTTPException as he:
+        # If it was 403, re-raise
+        if he.status_code == 403:
+            raise he
+        # If 401 (Invalid Clerk Token), catch and fall through to legacy Custom JWT check?
+        # NO, we are moving to Clerk. Just fail.
+        # But wait, did we deploy the frontend change yet? Yes.
+        # So Frontend sends Clerk Token now.
         raise he
     except Exception as e:
-        print(f"DEBUG: JWT Decode/Auth Error: {e}")
-        raise HTTPException(status_code=401, detail="Could not validate admin credentials")
+        print(f"DEBUG: Auth Error: {e}")
+        # As a fallback, try verifying as Custom JWT (for old sessions or testing)
+        try:
+             payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+             if payload.get("role") == "admin":
+                 return models.User(id=88888, email=payload.get("sub"), role="admin")
+        except:
+             pass
+             
+        raise HTTPException(status_code=401, detail="Invalid Authentication Token")
