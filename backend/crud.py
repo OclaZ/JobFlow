@@ -359,6 +359,7 @@ def get_admin_stats(db: Session):
         "recent_activity": [] 
     }
 
+def get_all_users_overview(db: Session):
     users = db.query(models.User).all()
     result = []
     for u in users:
