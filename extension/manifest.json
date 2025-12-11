@@ -27,6 +27,7 @@
                 "http://localhost:3000/*",
                 "https://job-flow-psi.vercel.app/*"
             ],
+            "run_at": "document_idle",
             "js": [
                 "token_listener.js"
             ]

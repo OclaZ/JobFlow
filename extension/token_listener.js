@@ -36,6 +36,7 @@ window.addEventListener("message", (event) => {
         if (token) {
             chrome.storage.local.set({ "clerk_token": token }, () => {
                 console.log("JobFlow Extension: Token synced!");
+                alert("JobFlow: Connected Successfully! You can now use the extension.");
             });
         }
     }
