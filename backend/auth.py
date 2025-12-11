@@ -172,13 +172,17 @@ def create_admin_access_token(data: dict, expires_delta: Optional[timedelta] = N
 oauth2_scheme_admin = OAuth2PasswordBearer(tokenUrl="admin/token")
 
 async def get_current_admin_user(token: str = Depends(oauth2_scheme_admin), db: Session = Depends(get_db)):
+    print(f"DEBUG: Validating Admin Token: {token[:10]}...")
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        print(f"DEBUG: Decoded Payload: {payload}")
         email: str = payload.get("sub")
         role: str = payload.get("role")
         if email is None or role != "admin":
+             print(f"DEBUG: Token Invalid. Email: {email}, Role: {role}")
              raise HTTPException(status_code=401, detail="Invalid admin token")
-    except Exception:
+    except Exception as e:
+        print(f"DEBUG: JWT Decode Error: {e}")
         raise HTTPException(status_code=401, detail="Could not validate admin credentials")
     
     # We can effectively return a User model, or a dummy admin object
