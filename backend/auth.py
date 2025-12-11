@@ -118,7 +118,10 @@ async def get_current_admin(current_user: models.User = Depends(get_current_user
         # Fallback: Check ENV
         import os
         admin_email = os.getenv("ADMIN_EMAIL")
-        if admin_email and current_user.email == admin_email:
+        
+        print(f"DEBUG: Checking Admin. User Email: {current_user.email}, ENV ADMIN_EMAIL: {admin_email}, Role: {current_user.role}")
+        
+        if admin_email and current_user.email.strip().lower() == admin_email.strip().lower():
             return current_user
         
         raise HTTPException(
