@@ -5,12 +5,21 @@ import CalendarHeatmap from "react-calendar-heatmap";
 import "react-calendar-heatmap/dist/styles.css";
 import { apiRequest } from "@/lib/api";
 import { Tooltip } from "react-tooltip";
+import { useAuth } from "@clerk/nextjs";
+
 export function ActivityHeatmap() {
     const [values, setValues] = useState<{ date: string; count: number }[]>([]);
+    const { getToken, isLoaded, isSignedIn } = useAuth();
 
     useEffect(() => {
-        apiRequest("/applications/")
-            .then(apps => {
+        if (!isLoaded || !isSignedIn) return;
+
+        const fetchData = async () => {
+            try {
+                const token = await getToken();
+                if (!token) return;
+
+                const apps = await apiRequest("/applications/", {}, token);
                 const dateMap = new Map<string, number>();
                 apps.forEach((app: any) => {
                     const date = app.dm_sent_date; // Assuming YYYY-MM-DD
@@ -24,9 +33,13 @@ export function ActivityHeatmap() {
                     count
                 }));
                 setValues(heatmapData);
-            })
-            .catch(console.error);
-    }, []);
+            } catch (error) {
+                console.error("Heatmap fetch error:", error);
+            }
+        };
+
+        fetchData();
+    }, [isLoaded, isSignedIn, getToken]);
 
     const today = new Date();
     const startDate = new Date(today.getFullYear(), 0, 1); // Start of current year
