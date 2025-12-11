@@ -153,3 +153,40 @@ async def get_current_admin(current_user: models.User = Depends(get_current_user
             detail=f"Access Denied. User: {current_user.email} is not authorized."
         )
     return current_user
+    return current_user
+
+# --- Custom Admin Auth (JWT) ---
+# Separate from Clerk to allow distinct Admin Login
+SECRET_KEY = os.getenv("SECRET_KEY", "supersecretkey")
+
+def create_admin_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=60) # 1 hour default
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm="HS256")
+    return encoded_jwt
+
+oauth2_scheme_admin = OAuth2PasswordBearer(tokenUrl="admin/token")
+
+async def get_current_admin_user(token: str = Depends(oauth2_scheme_admin), db: Session = Depends(get_db)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        email: str = payload.get("sub")
+        role: str = payload.get("role")
+        if email is None or role != "admin":
+             raise HTTPException(status_code=401, detail="Invalid admin token")
+    except Exception:
+        raise HTTPException(status_code=401, detail="Could not validate admin credentials")
+    
+    # We can effectively return a User model, or a dummy admin object
+    # Let's try to find them in DB, or just return an AdminUser object
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if not user:
+        # Create a transient admin user object if they don't exist in DB (unlikely if we want data)
+        # But really, the admin should exist.
+        raise HTTPException(status_code=401, detail="Admin user not found")
+    
+    return user

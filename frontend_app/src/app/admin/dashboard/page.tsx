@@ -49,13 +49,36 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         const loadData = async () => {
+            const token = localStorage.getItem("admin_token");
+            if (!token) {
+                // Redirect to login if no token
+                window.location.href = "/admin/login";
+                return;
+            }
+
+            const fetchAdmin = async (path: string) => {
+                const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://job-flow-psi.vercel.app";
+                const res = await fetch(`${API_URL}${path}`, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+                if (!res.ok) throw new Error("Unauthorized");
+                return res.json();
+            };
+
             try {
-                const statsData = await apiRequest("/admin/stats");
+                const statsData = await fetchAdmin("/admin/stats");
                 setStats(statsData);
 
-                const usersData = await apiRequest("/admin/users");
+                const usersData = await fetchAdmin("/admin/users");
                 setUsers(usersData);
             } catch (err: any) {
+                console.error(err);
+                if (err.message === "Unauthorized") {
+                    localStorage.removeItem("admin_token");
+                    window.location.href = "/admin/login";
+                }
                 setError("Access Denied or Server Error");
             } finally {
                 setLoading(false);

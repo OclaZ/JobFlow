@@ -398,9 +398,49 @@ except ImportError:
     import admin_schemas
 
 @app.get("/admin/stats", response_model=admin_schemas.GlobalStats)
-def get_admin_global_stats(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_admin)):
+def get_admin_global_stats(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_admin_user)):
     return crud.get_admin_stats(db)
 
 @app.get("/admin/users", response_model=List[admin_schemas.AdminUserOverview])
-def get_admin_users(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_admin)):
+def get_admin_users(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_admin_user)):
     return crud.get_all_users_overview(db)
+
+@app.post("/admin/login", response_model=schemas.Token)
+def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    # Check against Env Var specifically
+    admin_email_env = os.getenv("ADMIN_EMAIL")
+    admin_password_env = os.getenv("ADMIN_PASSWORD")
+    
+    if not admin_email_env or not admin_password_env:
+        raise HTTPException(status_code=500, detail="Admin credentials not configured on server")
+
+    if form_data.username.strip().lower() != admin_email_env.strip().lower() or form_data.password != admin_password_env:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect admin username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Ensure user exists in DB for foreign key consistency (stats, etc)
+    user = db.query(models.User).filter(models.User.email == admin_email_env).first()
+    if not user:
+        # Create hidden admin user in DB
+        import secrets
+        random_pw = secrets.token_urlsafe(16)
+        hashed_pw = auth.pwd_context.hash(random_pw)
+        user = models.User(
+            email=admin_email_env,
+            hashed_password=hashed_pw,
+            full_name="Super Admin",
+            role=schemas.UserRole.ADMIN,
+            auth_provider="local_admin",
+            avatar_url=None
+        )
+        db.add(user)
+        db.commit()
+    
+    access_token_expires = timedelta(minutes=60)
+    access_token = auth.create_admin_access_token(
+        data={"sub": user.email, "role": "admin"}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
