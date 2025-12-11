@@ -38,6 +38,7 @@ interface AdminUser {
     role: string;
     applications_count: number;
     offers_count: number;
+    last_active?: string;
 }
 
 export default function AdminDashboard() {
