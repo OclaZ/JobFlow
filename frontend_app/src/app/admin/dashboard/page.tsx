@@ -110,7 +110,7 @@ export default function AdminDashboard() {
                 <Shield className="w-16 h-16 text-red-500 mb-4" />
                 <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
                 <p className="text-gray-400 mb-6 text-center max-w-md">
-                    Your account ({user?.primaryEmailAddress?.emailAddress}) is not authorized to view this page.
+                    Your account ({user?.primaryEmailAddress?.emailAddress}) is not authorized to access the Admin Dashboard.
                 </p>
                 <div className="flex gap-4">
                     <button onClick={() => router.push("/")} className="px-4 py-2 bg-slate-700 rounded hover:bg-slate-600">
