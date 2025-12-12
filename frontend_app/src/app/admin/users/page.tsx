@@ -93,7 +93,7 @@ export default function AdminUsersPage() {
                             <th className="p-4 font-medium text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y" style={{ divideColor: "var(--border)" }}>
+                    <tbody className="divide-y divide-[var(--border)]">
                         {loading ? (
                             Array(5).fill(0).map((_, i) => (
                                 <tr key={i} className="animate-pulse">
