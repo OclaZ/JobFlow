@@ -45,14 +45,14 @@ export default function Sidebar() {
         }}>
             <div style={{ marginBottom: "2.5rem", display: "flex", alignItems: "center", gap: "0.75rem" }}>
                 <Image
-                    src="/jobflow_logo.png"
-                    alt="JobFlow Logo"
+                    src="/simplon_logo.png"
+                    alt="SimplonJob Logo"
                     width={32}
                     height={32}
                     style={{ borderRadius: "8px" }}
                 />
                 <span style={{ fontSize: "1.25rem", fontWeight: "700", color: "var(--foreground)" }}>
-                    JobFlow
+                    SimplonJob
                 </span>
             </div>
 

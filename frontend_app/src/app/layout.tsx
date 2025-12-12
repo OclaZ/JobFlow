@@ -15,10 +15,10 @@ const geistMono = Geist_Mono({
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 export const metadata: Metadata = {
-  title: "JobFlow - Smart Application Tracker",
-  description: "Streamline your job search, track applications, and land your dream job with JobFlow's intelligent dashboard.",
+  title: "SimplonJob - Smart Application Tracker",
+  description: "Streamline your job search, track applications, and land your dream job with SimplonJob's intelligent dashboard.",
   icons: {
-    icon: "/jobflow_logo.png",
+    icon: "/simplon_logo.png",
   },
 };
 

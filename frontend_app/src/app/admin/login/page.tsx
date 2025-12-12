@@ -77,7 +77,7 @@ export default function AdminLogin() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="w-full bg-slate-950 border border-slate-800 rounded-lg px-10 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
-                                placeholder="admin@jobflow.app"
+                                placeholder="admin@simplonjob.app"
                                 required
                             />
                         </div>
