@@ -392,3 +392,58 @@ def get_all_users_overview(db: Session):
     except Exception as e:
         print(f"DEBUG: get_all_users_overview failed: {e}")
         return []
+
+def delete_user(db: Session, user_id: int):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        return False
+    
+    # Manually delete related items if cascade is not set up in DB level (safer)
+    db.query(models.Application).filter(models.Application.user_id == user_id).delete()
+    db.query(models.JobOffer).filter(models.JobOffer.user_id == user_id).delete()
+    db.query(models.LinkedInActivity).filter(models.LinkedInActivity.user_id == user_id).delete()
+    db.query(models.Recruiter).filter(models.Recruiter.user_id == user_id).delete()
+    
+    db.delete(user)
+    db.commit()
+    return True
+
+def get_user_detailed_stats(db: Session, user_id: int):
+    import datetime
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        return None
+        
+    # Stats
+    total_apps = db.query(models.Application).filter(models.Application.user_id == user_id).count()
+    total_offers = db.query(models.JobOffer).filter(models.JobOffer.user_id == user_id).count()
+    
+    # Recent Activity (Last 20 items combined from Apps and Offers)
+    # Using simple fetch and memory sort
+    recent_apps = db.query(models.Application).filter(models.Application.user_id == user_id).order_by(models.Application.id.desc()).limit(20).all()
+    
+    history = []
+    for app in recent_apps:
+        history.append({
+            "type": "Application",
+            "target": f"{app.company} - {app.position}",
+            "date": app.dm_sent_date or "N/A",  # Rough approx of time
+            "status": app.final_status
+        })
+    
+    # Daily Goal Logic (Apps today)
+    today = datetime.date.today()
+    apps_today = db.query(models.Application).filter(
+        models.Application.user_id == user_id, 
+        models.Application.dm_sent_date == today
+    ).count()
+    
+    return {
+        "id": user.id,
+        "full_name": user.full_name,
+        "email": user.email,
+        "total_applications": total_apps,
+        "total_offers": total_offers,
+        "apps_today": apps_today,
+        "recent_history": history
+    }

@@ -459,3 +459,23 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
         data={"sub": user.email, "role": "admin"}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
+
+@app.get("/admin/users/{user_id}/details")
+def get_admin_user_details(user_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_admin_user)):
+    data = crud.get_user_detailed_stats(db, user_id)
+    if not data:
+        raise HTTPException(status_code=404, detail="User not found")
+    return data
+
+@app.delete("/admin/users/{user_id}")
+def delete_user_admin(user_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_admin_user)):
+    # Protect Super Admin from deletion if user_id matches
+    # Use email check for safety as ID might vary
+    target_user = db.query(models.User).filter(models.User.id == user_id).first()
+    if target_user and target_user.email == "hello@hamzaaslikh.com":
+         raise HTTPException(status_code=403, detail="Cannot delete Super Admin")
+
+    success = crud.delete_user(db, user_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"message": "User deleted successfully"}
