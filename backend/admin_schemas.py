@@ -6,7 +6,7 @@ class GlobalStats(BaseModel):
     total_applications: int
     total_offers: int
     total_companies: int
-    applications_by_platform: List[Dict[str, int]]
+    applications_by_platform: List[dict]
     recent_activity: List[Dict[str, str]]
 
 class AdminUserOverview(BaseModel):
