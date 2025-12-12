@@ -65,6 +65,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     email = payload.get("email") # Try getting email
     print(f"DEBUG: Token Verified. Sub: {user_clerk_id}, Email in claim: {email}")
     
+    
+    user_data = None
     if not email:
         # Fetch from Clerk API
         print(f"DEBUG: Fetching email from Clerk API for user {user_clerk_id}")
@@ -87,6 +89,30 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     
     if not user:
         # Create new user
+        # Try to get name from Clerk if we haven't fetched data yet
+        full_name = "New User"
+        avatar_url = None
+
+        if not user_data:
+             try:
+                print(f"DEBUG: Fetching details from Clerk API for NEW user {user_clerk_id}")
+                async with httpx.AsyncClient() as client:
+                    res = await client.get(
+                        f"https://api.clerk.com/v1/users/{user_clerk_id}",
+                        headers={"Authorization": f"Bearer {os.getenv('CLERK_SECRET_KEY')}"}
+                    )
+                    if res.status_code == 200:
+                        user_data = res.json()
+             except Exception as e:
+                 print(f"Failed to fetch user details from Clerk: {e}")
+
+        if user_data:
+            first = user_data.get("first_name") or ""
+            last = user_data.get("last_name") or ""
+            if first or last:
+                 full_name = f"{first} {last}".strip()
+            avatar_url = user_data.get("image_url") or user_data.get("profile_image_url")
+
         # Generate random password as placeholder
         import secrets
         random_password = secrets.token_urlsafe(16)
@@ -95,10 +121,10 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         user = models.User(
             email=email,
             hashed_password=hashed_password,
-            full_name="New User", # We could fetch name from Clerk too
+            full_name=full_name,
             role=schemas.UserRole.COLLABORATEUR,
             auth_provider="clerk",
-            avatar_url=None # Fetch if possible
+            avatar_url=avatar_url
         )
         db.add(user)
         db.commit()
