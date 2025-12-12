@@ -39,15 +39,16 @@ function AdminTabs({ activeTab, setActiveTab }: { activeTab: string, setActiveTa
     ];
 
     return (
-        <div className="flex gap-2 mb-8 bg-[var(--background)] p-1 rounded-lg border border-[var(--border)] w-fit">
+        <div className="flex gap-2 mb-8 bg-background p-1 rounded-lg border w-fit" style={{ borderColor: "var(--border)" }}>
             {tabs.map((tab) => (
                 <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === tab.id
-                        ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm"
-                        : "text-[var(--muted-foreground)] hover:bg-[var(--secondary)]"
+                            ? "bg-primary text-white shadow-sm"
+                            : "text-muted hover:bg-secondary"
                         }`}
+                    style={activeTab === tab.id ? { backgroundColor: "var(--primary)", color: "#fff" } : {}}
                 >
                     {tab.icon}
                     {tab.label}
@@ -176,27 +177,29 @@ export default function AdminDashboard() {
             animate="visible"
         >
             {/* Header */}
-            <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            {/* Header */}
+            <header className="flex flex-col md-flex-row justify-between items-start md-items-center mb-8 gap-4">
                 <div>
                     <motion.h1
-                        className="text-3xl font-bold flex items-center gap-3 text-[var(--foreground)]"
+                        className="text-3xl font-bold flex items-center gap-3"
+                        style={{ color: "var(--foreground)" }}
                         initial={{ x: -20, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                     >
-                        <Shield className="w-8 h-8 text-[var(--primary)]" />
+                        <Shield className="w-8 h-8 text-primary" />
                         Super Admin Center
                     </motion.h1>
-                    <p className="text-[var(--muted-foreground)] mt-2">Global ecosystem oversight and management.</p>
+                    <p className="text-muted mt-2">Global ecosystem oversight and management.</p>
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <div className="text-right hidden md:block">
-                        <p className="text-sm font-semibold text-[var(--foreground)]">{user?.fullName}</p>
-                        <p className="text-xs text-[var(--muted-foreground)]">Super Admin</p>
+                    <div className="text-right hidden md-block">
+                        <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>{user?.fullName}</p>
+                        <p className="text-xs text-muted">Super Admin</p>
                     </div>
                     <button
                         onClick={() => signOut(() => router.push("/"))}
-                        className="p-2 bg-[var(--secondary)] hover:bg-[var(--destructive)]/20 text-[var(--muted-foreground)] rounded-lg"
+                        className="p-2 bg-secondary rounded-lg text-muted"
                         title="Sign Out"
                     >
                         <LogOut className="w-5 h-5" />
@@ -209,11 +212,11 @@ export default function AdminDashboard() {
             {activeTab === "overview" && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                     {/* Top Metrics */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div className="grid grid-cols-1 md-grid-cols-2 lg-grid-cols-4 gap-6 mb-8">
                         <MetricCard
                             title="Total Ecosystem Users"
                             value={stats?.total_users || 0}
-                            icon={<Users className="w-6 h-6 text-[var(--primary)]" />}
+                            icon={<Users className="w-6 h-6 text-primary" />}
                             delay={0}
                         />
                         <MetricCard
@@ -237,18 +240,18 @@ export default function AdminDashboard() {
                     </div>
 
                     {/* Main Content Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                    <div className="grid grid-cols-1 lg-grid-cols-3 gap-8 mb-8">
 
                         {/* Platform Distribution Chart */}
-                        <motion.div className="card col-span-1 lg:col-span-2">
+                        <motion.div className="card col-span-1 lg-col-span-2">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="flex items-center gap-2">
-                                    <TrendingUp className="w-5 h-5 text-[var(--primary)]" />
+                                <h3 className="flex items-center gap-2 text-base font-semibold">
+                                    <TrendingUp className="w-5 h-5 text-primary" />
                                     Platform Insights
                                 </h3>
                             </div>
 
-                            <div className="h-[350px] w-full bg-[var(--background)]/50 rounded-xl p-4 flex items-center justify-center">
+                            <div className="h-[350px] w-full bg-background/50 rounded-xl p-4 flex items-center justify-center border" style={{ borderColor: "var(--border)" }}>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie
@@ -281,8 +284,8 @@ export default function AdminDashboard() {
 
                         {/* System Health / Status */}
                         <motion.div className="card flex flex-col gap-6">
-                            <h3 className="flex items-center gap-2">
-                                <Activity className="w-5 h-5 text-[var(--destructive)]" />
+                            <h3 className="flex items-center gap-2 text-base font-semibold">
+                                <Activity className="w-5 h-5 text-destructive" />
                                 System Health
                             </h3>
 
@@ -313,11 +316,11 @@ export default function AdminDashboard() {
                                 />
                             </div>
 
-                            <div className="mt-auto p-4 bg-[var(--secondary)] rounded-lg border border-[var(--border)]">
+                            <div className="mt-auto p-4 bg-secondary rounded-lg border border-b" style={{ borderColor: "var(--border)" }}>
                                 <h4 className="text-sm font-semibold mb-2">Backend Version</h4>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-[var(--muted-foreground)]">v1.4.2 (Stable)</span>
-                                    <span className="text-[var(--primary)] cursor-pointer hover:underline">View Logs</span>
+                                    <span className="text-muted">v1.4.2 (Stable)</span>
+                                    <span className="text-primary cursor-pointer hover:underline">View Logs</span>
                                 </div>
                             </div>
                         </motion.div>
@@ -328,24 +331,25 @@ export default function AdminDashboard() {
             {activeTab === "users" && (
                 <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="grid grid-cols-12 gap-6 h-[800px]">
                     {/* Sidebar / User List */}
-                    <div className="col-span-12 md:col-span-4 card flex flex-col p-4 h-full overflow-hidden">
+                    <div className="col-span-12 md-col-span-4 card flex flex-col p-4 h-full overflow-hidden">
                         <div className="mb-4 relative">
-                            <Search className="absolute left-3 top-3 w-4 h-4 text-[var(--muted-foreground)]" />
-                            <input type="text" placeholder="Search users..." className="w-full pl-9 p-2 bg-[var(--background)] border border-[var(--border)] rounded-md text-sm outline-none focus:border-[var(--primary)]" />
+                            <Search className="absolute left-3 top-3 w-4 h-4 text-muted" />
+                            <input type="text" placeholder="Search users..." className="w-full pl-9 p-2 bg-background border rounded-md text-sm outline-none" style={{ color: "var(--foreground)", borderColor: "var(--border)" }} />
                         </div>
                         <div className="flex-1 overflow-y-auto space-y-2 pr-2">
                             {users.map(u => (
                                 <div
                                     key={u.id}
                                     onClick={() => setSelectedUserId(u.id)}
-                                    className={`p-3 rounded-lg cursor-pointer transition-colors border ${selectedUserId === u.id ? "bg-[var(--primary)]/10 border-[var(--primary)]" : "hover:bg-[var(--secondary)] border-transparent"}`}
+                                    className={`p-3 rounded-lg cursor-pointer transition-colors border ${selectedUserId === u.id ? "" : "hover:bg-secondary border-transparent"}`}
+                                    style={selectedUserId === u.id ? { backgroundColor: "rgba(10, 102, 194, 0.1)", borderColor: "var(--primary)" } : {}}
                                 >
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <p className="font-semibold text-sm">{u.full_name || "Unknown User"}</p>
-                                            <p className="text-xs text-[var(--muted-foreground)]">{u.email}</p>
+                                            <p className="text-xs text-muted">{u.email}</p>
                                         </div>
-                                        <span className={`text-[10px] px-1.5 py-0.5 rounded ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}`}>{u.role}</span>
+                                        <span className={`text-xs px-1.5 py-0.5 rounded ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}`}>{u.role}</span>
                                     </div>
                                 </div>
                             ))}
@@ -353,21 +357,21 @@ export default function AdminDashboard() {
                     </div>
 
                     {/* Main Content / Detail View */}
-                    <div className="col-span-12 md:col-span-8 card p-6 h-full overflow-y-auto">
+                    <div className="col-span-12 md-col-span-8 card p-6 h-full overflow-y-auto">
                         {detailsLoading ? (
-                            <div className="flex justify-center items-center h-full"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[var(--primary)]"></div></div>
+                            <div className="flex justify-center items-center h-full"><div className="w-8 h-8 rounded-full border-t-2 border-b-2" style={{ borderColor: 'var(--primary)' }}></div></div>
                         ) : selectedUserDetails ? (
                             <div className="space-y-8">
                                 {/* User Header */}
-                                <div className="flex justify-between items-start border-b border-[var(--border)] pb-6">
+                                <div className="flex justify-between items-start border-b pb-6" style={{ borderColor: "var(--border)" }}>
                                     <div className="flex items-center gap-4">
-                                        <div className="w-16 h-16 rounded-full bg-[var(--secondary)] flex items-center justify-center text-2xl font-bold text-[var(--muted-foreground)]">
+                                        <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-2xl font-bold text-muted">
                                             {selectedUserDetails.full_name?.[0] || selectedUserDetails.email[0].toUpperCase()}
                                         </div>
                                         <div>
                                             <h2 className="text-2xl font-bold">{selectedUserDetails.full_name || "Unknown User"}</h2>
-                                            <p className="text-[var(--muted-foreground)]">{selectedUserDetails.email}</p>
-                                            <p className="text-xs text-[var(--muted-foreground)] mt-1">ID: #{selectedUserDetails.id}</p>
+                                            <p className="text-muted">{selectedUserDetails.email}</p>
+                                            <p className="text-xs text-muted mt-1">ID: #{selectedUserDetails.id}</p>
                                         </div>
                                     </div>
                                     <div className="flex gap-2">
@@ -378,46 +382,46 @@ export default function AdminDashboard() {
 
                                 {/* Deep Stats */}
                                 <div className="grid grid-cols-3 gap-4">
-                                    <div className="p-4 bg-[var(--secondary)] rounded-xl">
-                                        <h4 className="text-xs uppercase text-[var(--muted-foreground)] font-semibold mb-2">Total Applications</h4>
-                                        <p className="text-3xl font-bold text-[var(--primary)]">{selectedUserDetails.total_applications}</p>
+                                    <div className="p-4 bg-secondary rounded-xl">
+                                        <h4 className="text-xs uppercase text-muted font-semibold mb-2">Total Applications</h4>
+                                        <p className="text-3xl font-bold text-primary">{selectedUserDetails.total_applications}</p>
                                     </div>
-                                    <div className="p-4 bg-[var(--secondary)] rounded-xl">
-                                        <h4 className="text-xs uppercase text-[var(--muted-foreground)] font-semibold mb-2">Offers Saved</h4>
+                                    <div className="p-4 bg-secondary rounded-xl">
+                                        <h4 className="text-xs uppercase text-muted font-semibold mb-2">Offers Saved</h4>
                                         <p className="text-3xl font-bold text-violet-500">{selectedUserDetails.total_offers}</p>
                                     </div>
-                                    <div className="p-4 bg-[var(--secondary)] rounded-xl">
-                                        <h4 className="text-xs uppercase text-[var(--muted-foreground)] font-semibold mb-2">Apps Today</h4>
+                                    <div className="p-4 bg-secondary rounded-xl">
+                                        <h4 className="text-xs uppercase text-muted font-semibold mb-2">Apps Today</h4>
                                         <p className="text-xl font-bold text-green-600 flex items-center gap-2"><UserCheck className="w-5 h-5" /> {selectedUserDetails.apps_today}</p>
-                                        <p className="text-xs text-[var(--muted-foreground)]">Target: 10/day</p>
+                                        <p className="text-xs text-muted">Target: 10/day</p>
                                     </div>
                                 </div>
 
                                 {/* Activity History */}
                                 <div>
                                     <h3 className="font-semibold mb-4">Recent Activity (Applications)</h3>
-                                    <div className="border border-[var(--border)] rounded-lg overflow-hidden">
+                                    <div className="border rounded-lg overflow-hidden" style={{ borderColor: "var(--border)" }}>
                                         <table className="w-full text-sm text-left">
-                                            <thead className="bg-[var(--secondary)] text-[var(--muted-foreground)]">
+                                            <thead className="bg-secondary text-muted">
                                                 <tr>
                                                     <th className="p-3">Status</th>
                                                     <th className="p-3">Target</th>
                                                     <th className="p-3 text-right">Date</th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y divide-[var(--border)]">
+                                            <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
                                                 {selectedUserDetails.recent_history && selectedUserDetails.recent_history.length > 0 ? (
                                                     selectedUserDetails.recent_history.map((item: any, i: number) => (
                                                         <tr key={i}>
                                                             <td className="p-3">
-                                                                <span className="px-2 py-1 rounded text-xs bg-slate-100 dark:bg-slate-800">{item.status}</span>
+                                                                <span className="px-2 py-1 rounded text-xs bg-gray-100">{item.status}</span>
                                                             </td>
                                                             <td className="p-3 font-medium">{item.target}</td>
-                                                            <td className="p-3 text-right text-[var(--muted-foreground)]">{item.date}</td>
+                                                            <td className="p-3 text-right text-muted">{item.date}</td>
                                                         </tr>
                                                     ))
                                                 ) : (
-                                                    <tr><td colSpan={3} className="p-4 text-center text-[var(--muted-foreground)]">No recent applications found.</td></tr>
+                                                    <tr><td colSpan={3} className="p-4 text-center text-muted">No recent applications found.</td></tr>
                                                 )}
                                             </tbody>
                                         </table>
@@ -425,7 +429,7 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="h-full flex flex-col justify-center items-center text-[var(--muted-foreground)]">
+                            <div className="h-full flex flex-col justify-center items-center text-muted">
                                 <Users className="w-16 h-16 mb-4 opacity-20" />
                                 <p>Select a user from the list to monitor their activity.</p>
                             </div>
@@ -435,7 +439,7 @@ export default function AdminDashboard() {
             )}
 
             {activeTab === "offers" && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-center items-center h-[400px] text-[var(--muted-foreground)]">
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-center items-center h-[400px] text-muted">
                     <p>Global Offer Management Coming Soon...</p>
                 </motion.div>
             )}
@@ -452,15 +456,15 @@ function MetricCard({ title, value, icon, delay }: { title: string; value: numbe
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay }}
-            whileHover={{ y: -5, boxShadow: 'var(--shadow-lg)' }}
+            whileHover={{ y: -5 }}
         >
             <div className="flex justify-between items-start mb-4">
-                <span className="p-2 bg-[var(--secondary)] rounded-lg">{icon}</span>
+                <span className="p-2 bg-secondary rounded-lg">{icon}</span>
                 {/* Optional Sparkline or Badge could go here */}
             </div>
             <div>
-                <p className="text-[var(--muted-foreground)] text-sm font-medium uppercase tracking-wide">{title}</p>
-                <p className="text-3xl font-bold text-[var(--foreground)] mt-2">{value}</p>
+                <p className="text-muted text-sm font-medium uppercase tracking-wide">{title}</p>
+                <p className="text-3xl font-bold mt-2" style={{ color: "var(--foreground)" }}>{value}</p>
             </div>
         </motion.div>
     );
@@ -468,16 +472,16 @@ function MetricCard({ title, value, icon, delay }: { title: string; value: numbe
 
 function HealthItem({ label, status, icon, color }: { label: string, status: string, icon: any, color: string }) {
     return (
-        <div className="flex items-center justify-between p-3 bg-[var(--background)] rounded-lg border border-[var(--border)]">
+        <div className="flex items-center justify-between p-3 bg-background rounded-lg border" style={{ borderColor: "var(--border)" }}>
             <div className="flex items-center gap-3">
-                <div className={`p-1.5 rounded-full bg-[var(--secondary)] ${color}`}>
+                <div className={`p-1.5 rounded-full bg-secondary ${color}`}>
                     {icon}
                 </div>
-                <span className="text-sm font-medium text-[var(--foreground)]">{label}</span>
+                <span className="text-sm font-medium" style={{ color: "var(--foreground)" }}>{label}</span>
             </div>
             <div className="flex items-center gap-2">
                 <div className={`w-2 h-2 rounded-full ${status === 'Operational' || status === 'Synced' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-                <span className="text-xs font-semibold text-[var(--muted-foreground)]">{status}</span>
+                <span className="text-xs font-semibold text-muted">{status}</span>
             </div>
         </div>
     );
