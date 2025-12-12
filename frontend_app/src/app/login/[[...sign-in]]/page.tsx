@@ -5,28 +5,18 @@ import Image from "next/image";
 
 export default function LoginPage() {
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--background)] p-4 gap-8">
-            <div className="flex flex-col items-center gap-2 text-center animate-in fade-in zoom-in duration-500">
+        <div style={{ display: "flex", flexDirection: "column", height: "100vh", alignItems: "center", justifyContent: "center", background: "var(--background)", gap: "2rem" }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.5rem" }}>
                 <Image
                     src="/simplon_logo.png"
                     alt="SimplonJob Logo"
-                    width={80}
-                    height={80}
-                    className="rounded-2xl shadow-lg mb-2"
+                    width={64}
+                    height={64}
+                    style={{ borderRadius: "12px" }}
                 />
-                <h1 className="text-3xl font-bold text-[var(--foreground)] tracking-tight">SimplonJob</h1>
-                <p className="text-[var(--muted-foreground)] text-sm">Sign in to manage your career journey</p>
+                <h1 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "var(--foreground)" }}>SimplonJob</h1>
             </div>
-            <div className="w-full max-w-sm">
-                <SignIn
-                    appearance={{
-                        elements: {
-                            card: "shadow-xl border border-[var(--border)] rounded-2xl",
-                            rootBox: "w-full",
-                        }
-                    }}
-                />
-            </div>
+            <SignIn />
         </div>
     );
 }
