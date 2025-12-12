@@ -177,21 +177,45 @@ async def get_current_admin_user(
     print(f"DEBUG: Validating Admin Request. Token: {token[:10]}...")
     
     # 1. Try Clerk/Standard Token Verification
+    # 1. Try Clerk/Standard Token Verification
     try:
         payload = verify_token(token)
-        # If we are here, token is valid Clerk token
-        email = payload.get("email")
-        if not email:
-            # Try fetching from Clerk API if missing in claims (rare but possible)
-            sub = payload.get("sub")
-            # For speed, skip this unless crucial.
-            # Assuming email is present for now or we fail.
-            pass
+        print(f"DEBUG: Token Payload Keys: {list(payload.keys())}")
         
-        print(f"DEBUG: Clerk Token Valid. Email: {email}")
+        # Clerk Session Tokens usually DO NOT have email.
+        # We must fetch it using the 'sub' (User ID) if missing.
+        email = payload.get("email")
+        user_clerk_id = payload.get("sub")
+        
+        if not email and user_clerk_id:
+            print(f"DEBUG: Email missing in token. Fetching from Clerk API for ID: {user_clerk_id}")
+            try:
+                # Synchronous fetch (since we are in async def, we should use httpx.AsyncClient or just simple request)
+                # But to keep dependencies simple and robust, let's use httpx inside context
+                async with httpx.AsyncClient() as client:
+                    clerk_key = os.getenv("CLERK_SECRET_KEY")
+                    if not clerk_key:
+                        print("CRITICAL: CLERK_SECRET_KEY is missing! Cannot fetch user details.")
+                    else:
+                        res = await client.get(
+                            f"https://api.clerk.com/v1/users/{user_clerk_id}",
+                            headers={"Authorization": f"Bearer {clerk_key}"}
+                        )
+                        if res.status_code == 200:
+                            user_data = res.json()
+                            if user_data.get("email_addresses"):
+                                email = user_data["email_addresses"][0]["email_address"]
+                                print(f"DEBUG: Fetched Email from Clerk: {email}")
+                        else:
+                            print(f"DEBUG: Clerk API Fetch Failed: {res.status_code} {res.text}")
+            except Exception as fetch_e:
+                print(f"DEBUG: Failed to fetch from Clerk API: {fetch_e}")
+
+        
+        print(f"DEBUG: Final Resolved Email: {email}")
         
         # 2. Check Admin Access
-        # HARDCODED SUPER ADMIN
+        # HARDCODED SUPER ADMIN CHECK
         if email and email.strip().lower() == "hello@hamzaaslikh.com":
              print("DEBUG: Super Admin Detected (Clerk). Access Granted.")
              return models.User(
@@ -212,7 +236,11 @@ async def get_current_admin_user(
                 print(f"DEBUG: DB Lookup failed: {e}")
                 
         # If we reached here, user is valid but NOT admin
-        raise HTTPException(status_code=403, detail="Access Denied: Not an Admin")
+        # Return detailed error for debugging
+        raise HTTPException(
+            status_code=403, 
+            detail=f"Access Denied: Not an Admin. Email: {email or 'Unknown'}"
+        )
 
     except HTTPException as he:
         # If it was 403, re-raise
