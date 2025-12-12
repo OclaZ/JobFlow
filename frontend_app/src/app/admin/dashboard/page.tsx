@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import {
     Tooltip,
     ResponsiveContainer,
@@ -20,7 +21,10 @@ import {
     Activity,
     LogOut,
     Shield,
-    AlertTriangle
+    AlertTriangle,
+    Zap,
+    Server,
+    Database
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -34,8 +38,8 @@ export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-    // Colors
-    const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
+    // Colors aligned with Global Theme
+    const COLORS = ['var(--primary)', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
     useEffect(() => {
         if (!isLoaded) return;
@@ -45,11 +49,10 @@ export default function AdminDashboard() {
             return;
         }
 
-        // Check Hardcoded Admin Email on Client Side for immediate feedback
-        // (Backend verifies this securely, this is just for UX)
         const email = user?.primaryEmailAddress?.emailAddress;
+
+        // Frontend check for UX only (Backend enforces security)
         if (email && email !== "hello@hamzaaslikh.com") {
-            // Optional: You can block here, but let backend describe the error
             // setError("Access Denied: You are not an admin.");
         }
 
@@ -58,7 +61,6 @@ export default function AdminDashboard() {
                 const token = await getToken();
                 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://job-flow-psi.vercel.app";
 
-                // Helper for fetch
                 const authFetch = async (endpoint: string) => {
                     const res = await fetch(`${API_URL}${endpoint}`, {
                         headers: {
@@ -73,8 +75,8 @@ export default function AdminDashboard() {
                 };
 
                 const [statsData, usersData] = await Promise.all([
-                    authFetch("/admin/stats"), // Uses depends(get_current_admin)
-                    authFetch("/admin/users")  // Uses depends(get_current_admin)
+                    authFetch("/admin/stats"),
+                    authFetch("/admin/users")
                 ]);
 
                 setStats(statsData);
@@ -95,66 +97,71 @@ export default function AdminDashboard() {
 
     if (!isLoaded || loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-            </div>
-        );
-    }
-
-    if (!userId) return null; // Router will handle redirect
-
-    // Access Denied UI
-    if (error.includes("Access Denied") || error.includes("403")) {
-        return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-slate-900 text-white p-4">
-                <Shield className="w-16 h-16 text-red-500 mb-4" />
-                <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
-                <p className="text-gray-400 mb-6 text-center max-w-md">
-                    Your account ({user?.primaryEmailAddress?.emailAddress}) is not authorized to access the Admin Dashboard.
-                </p>
-                <div className="flex gap-4">
-                    <button onClick={() => router.push("/")} className="px-4 py-2 bg-slate-700 rounded hover:bg-slate-600">
-                        Go Home
-                    </button>
-                    <button onClick={() => signOut()} className="px-4 py-2 bg-red-600 rounded hover:bg-red-500">
-                        Sign Out
-                    </button>
-                </div>
-                <p className="mt-8 text-xs text-gray-500">Error Detail: {error}</p>
+            <div className="flex justify-center items-center h-screen bg-[var(--background)]">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--primary)]"></div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-slate-900 text-white">
-                <AlertTriangle className="w-12 h-12 text-yellow-500 mb-4" />
-                <h2 className="text-xl">Something went wrong</h2>
-                <p className="text-gray-400 mb-4">{error}</p>
-                <button onClick={() => window.location.reload()} className="px-4 py-2 bg-blue-600 rounded">Retry</button>
+            <div className="flex flex-col items-center justify-center h-screen bg-[var(--background)] p-4 text-center">
+                <AlertTriangle className="w-16 h-16 text-[var(--destructive)] mb-4" />
+                <h1 className="text-2xl font-bold mb-2">Access Denied / Error</h1>
+                <p className="text-[var(--muted-foreground)] mb-6 max-w-md">{error}</p>
+
+                <div className="flex gap-4">
+                    <button onClick={() => router.push("/")} className="btn btn-secondary">
+                        Go Home
+                    </button>
+                    <button onClick={() => signOut()} className="btn btn-destructive">
+                        Sign Out
+                    </button>
+                </div>
             </div>
         );
     }
 
+    // Animation Variants
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+    };
+
+    const itemVariants = {
+        hidden: { y: 20, opacity: 0 },
+        visible: { y: 0, opacity: 1 }
+    };
+
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-8 font-sans">
+        <motion.div
+            className="p-8 max-w-[1600px] mx-auto min-h-screen"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+        >
             {/* Header */}
-            <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b border-slate-800 pb-6">
+            <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent flex items-center gap-2">
-                        <Shield className="w-8 h-8 text-blue-500" />
-                        Admin Dashboard
-                    </h1>
-                    <p className="text-slate-400 mt-1">System Overview & Analytics</p>
+                    <motion.h1
+                        className="text-3xl font-bold flex items-center gap-3 text-[var(--foreground)]"
+                        initial={{ x: -20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                    >
+                        <Shield className="w-8 h-8 text-[var(--primary)]" />
+                        Super Admin Center
+                    </motion.h1>
+                    <p className="text-[var(--muted-foreground)] mt-2">Global ecosystem oversight and management.</p>
                 </div>
+
                 <div className="flex items-center gap-4">
                     <div className="text-right hidden md:block">
-                        <p className="text-sm font-medium text-white">{user?.fullName}</p>
-                        <p className="text-xs text-slate-400">{user?.primaryEmailAddress?.emailAddress}</p>
+                        <p className="text-sm font-semibold text-[var(--foreground)]">{user?.fullName}</p>
+                        <p className="text-xs text-[var(--muted-foreground)]">Super Admin</p>
                     </div>
                     <button
                         onClick={() => signOut(() => router.push("/"))}
-                        className="p-2 bg-slate-800/50 hover:bg-red-900/20 text-slate-300 hover:text-red-400 rounded-lg transition-colors border border-slate-700"
+                        className="p-2 bg-[var(--secondary)] hover:bg-[var(--destructive)]/20 text-[var(--muted-foreground)] hover:text-[var(--destructive)] rounded-lg transition-colors border border-[var(--border)]"
                         title="Sign Out"
                     >
                         <LogOut className="w-5 h-5" />
@@ -162,51 +169,55 @@ export default function AdminDashboard() {
                 </div>
             </header>
 
-            {/* Key Metrics Grid */}
+            {/* Top Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <MetricCard
-                    title="Total Users"
+                    title="Total Ecosystem Users"
                     value={stats?.total_users || 0}
-                    icon={<Users className="w-6 h-6 text-blue-400" />}
-                    color="bg-blue-500/10 border-blue-500/20"
+                    icon={<Users className="w-6 h-6 text-[var(--primary)]" />}
+                    delay={0}
                 />
                 <MetricCard
                     title="Total Applications"
                     value={stats?.total_applications || 0}
-                    icon={<FileText className="w-6 h-6 text-emerald-400" />}
-                    color="bg-emerald-500/10 border-emerald-500/20"
+                    icon={<FileText className="w-6 h-6 text-emerald-500" />}
+                    delay={0.1}
                 />
                 <MetricCard
                     title="Active Job Offers"
                     value={stats?.total_offers || 0}
-                    icon={<Briefcase className="w-6 h-6 text-violet-400" />}
-                    color="bg-violet-500/10 border-violet-500/20"
+                    icon={<Briefcase className="w-6 h-6 text-violet-500" />}
+                    delay={0.2}
                 />
                 <MetricCard
                     title="Companies Tracked"
                     value={stats?.total_companies || 0}
-                    icon={<Building className="w-6 h-6 text-amber-400" />}
-                    color="bg-amber-500/10 border-amber-500/20"
+                    icon={<Building className="w-6 h-6 text-amber-500" />}
+                    delay={0.3}
                 />
             </div>
 
-            {/* Charts Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                {/* Platform Distribution */}
-                <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 backdrop-blur-sm">
-                    <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
-                        <TrendingUp className="w-5 h-5 text-indigo-400" />
-                        Platform Distribution
-                    </h3>
-                    <div className="h-[300px] w-full">
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+
+                {/* Platform Distribution Chart */}
+                <motion.div className="card col-span-1 lg:col-span-2" variants={itemVariants}>
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="flex items-center gap-2">
+                            <TrendingUp className="w-5 h-5 text-[var(--primary)]" />
+                            Platform Insights
+                        </h3>
+                    </div>
+
+                    <div className="h-[350px] w-full bg-[var(--background)]/50 rounded-xl p-4 flex items-center justify-center">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
                                     data={stats?.applications_by_platform || []}
                                     cx="50%"
                                     cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={100}
+                                    innerRadius={80}
+                                    outerRadius={120}
                                     paddingAngle={5}
                                     dataKey="value"
                                 >
@@ -215,98 +226,160 @@ export default function AdminDashboard() {
                                     ))}
                                 </Pie>
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f1f5f9' }}
-                                    itemStyle={{ color: '#f1f5f9' }}
+                                    contentStyle={{
+                                        backgroundColor: 'var(--card-bg)',
+                                        borderColor: 'var(--card-border)',
+                                        color: 'var(--foreground)',
+                                        borderRadius: 'var(--radius)',
+                                        boxShadow: 'var(--shadow)'
+                                    }}
                                 />
-                                <Legend />
+                                <Legend verticalAlign="bottom" height={36} iconType="circle" />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
-                </div>
+                </motion.div>
 
-                {/* Recent Activity / Placeholder */}
-                <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 backdrop-blur-sm">
-                    <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
-                        <Activity className="w-5 h-5 text-pink-400" />
-                        System Status
+                {/* System Health / Status */}
+                <motion.div className="card flex flex-col gap-6" variants={itemVariants}>
+                    <h3 className="flex items-center gap-2">
+                        <Activity className="w-5 h-5 text-[var(--destructive)]" />
+                        System Health
                     </h3>
+
                     <div className="space-y-4">
-                        <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700 flex items-center justify-between">
-                            <span>Database Status</span>
-                            <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">Operational</span>
-                        </div>
-                        <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700 flex items-center justify-between">
-                            <span>Server Region</span>
-                            <span className="text-slate-400 text-sm">Vercel (Europe-West)</span>
-                        </div>
-                        <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700 flex items-center justify-between">
-                            <span>API Latency</span>
-                            <span className="text-slate-400 text-sm">~45ms</span>
+                        <HealthItem
+                            label="Database (PostgreSQL)"
+                            status="Operational"
+                            icon={<Database className="w-4 h-4" />}
+                            color="text-green-500"
+                        />
+                        <HealthItem
+                            label="API Services"
+                            status="Operational"
+                            icon={<Server className="w-4 h-4" />}
+                            color="text-green-500"
+                        />
+                        <HealthItem
+                            label="Auth (Clerk)"
+                            status="Synced"
+                            icon={<Shield className="w-4 h-4" />}
+                            color="text-blue-500"
+                        />
+                        <HealthItem
+                            label="Response Latency"
+                            status="45ms"
+                            icon={<Zap className="w-4 h-4" />}
+                            color="text-amber-500"
+                        />
+                    </div>
+
+                    <div className="mt-auto p-4 bg-[var(--secondary)] rounded-lg border border-[var(--border)]">
+                        <h4 className="text-sm font-semibold mb-2">Backend Version</h4>
+                        <div className="flex justify-between text-sm">
+                            <span className="text-[var(--muted-foreground)]">v1.4.2 (Stable)</span>
+                            <span className="text-[var(--primary)] cursor-pointer hover:underline">View Logs</span>
                         </div>
                     </div>
-                </div>
+                </motion.div>
             </div>
 
             {/* Users Table */}
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden backdrop-blur-sm">
-                <div className="p-6 border-b border-slate-800">
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                        <Users className="w-5 h-5 text-sky-400" />
-                        Registered Users
+            <motion.div className="card" variants={itemVariants}>
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="flex items-center gap-2">
+                        <Users className="w-5 h-5 text-[var(--accent-foreground)]" />
+                        Registered Users Registry
                     </h3>
+                    <button className="btn btn-secondary text-sm">Download CSV</button>
                 </div>
+
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-slate-800/50 text-slate-400 text-sm uppercase tracking-wider">
+                            <tr className="border-b border-[var(--border)] text-[var(--muted-foreground)] text-sm uppercase tracking-wider">
                                 <th className="p-4 font-medium">Remote ID</th>
-                                <th className="p-4 font-medium">Email</th>
+                                <th className="p-4 font-medium">User Profile</th>
                                 <th className="p-4 font-medium">Role</th>
                                 <th className="p-4 font-medium text-center">Applications</th>
                                 <th className="p-4 font-medium text-center">Offers</th>
+                                <th className="p-4 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-800">
+                        <tbody className="divide-y divide-[var(--border)]">
                             {users.map((u) => (
-                                <tr key={u.id} className="hover:bg-slate-800/30 transition-colors">
-                                    <td className="p-4 text-slate-500 text-xs font-mono">{u.id}</td>
-                                    <td className="p-4 text-slate-200">{u.email}</td>
+                                <tr key={u.id} className="hover:bg-[var(--secondary)] transition-colors group">
+                                    <td className="p-4 text-[var(--muted-foreground)] text-xs font-mono">#{u.id}</td>
                                     <td className="p-4">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${u.role === "admin"
-                                            ? "bg-purple-500/20 text-purple-300"
-                                            : "bg-slate-700 text-slate-300"
+                                        <div className="font-semibold text-[var(--foreground)]">{u.full_name || "Unknown User"}</div>
+                                        <div className="text-xs text-[var(--muted-foreground)]">{u.email}</div>
+                                    </td>
+                                    <td className="p-4">
+                                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${u.role === "admin"
+                                                ? "bg-purple-100 text-purple-700 border-purple-200"
+                                                : "bg-gray-100 text-gray-700 border-gray-200"
                                             }`}>
-                                            {u.role}
+                                            {u.role.toUpperCase()}
                                         </span>
                                     </td>
-                                    <td className="p-4 text-center">{u.applications_count}</td>
-                                    <td className="p-4 text-center">{u.offers_count}</td>
+                                    <td className="p-4 text-center font-bold text-[var(--foreground)]">{u.applications_count}</td>
+                                    <td className="p-4 text-center font-bold text-[var(--foreground)]">{u.offers_count}</td>
+                                    <td className="p-4 text-right">
+                                        <button className="text-[var(--primary)] hover:underline text-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                                            Edit
+                                        </button>
+                                    </td>
                                 </tr>
                             ))}
                             {users.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="p-8 text-center text-slate-500">
-                                        No users found or check database connection.
+                                    <td colSpan={6} className="p-12 text-center text-[var(--muted-foreground)]">
+                                        No users found in the system.
                                     </td>
                                 </tr>
                             )}
                         </tbody>
                     </table>
                 </div>
-            </div>
-        </div >
+            </motion.div>
+        </motion.div>
     );
 }
 
-function MetricCard({ title, value, icon, color }: { title: string; value: number; icon: React.ReactNode; color: string }) {
+// Components matching "Normal" User Design
+function MetricCard({ title, value, icon, delay }: { title: string; value: number; icon: React.ReactNode; delay: number }) {
     return (
-        <div className={`rounded-xl border p-5 ${color} flex items-center justify-between`}>
-            <div>
-                <p className="text-slate-400 text-sm font-medium">{title}</p>
-                <p className="text-2xl font-bold text-slate-100 mt-1">{value}</p>
+        <motion.div
+            className="card flex flex-col justify-between h-full"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay }}
+            whileHover={{ y: -5, boxShadow: 'var(--shadow-lg)' }}
+        >
+            <div className="flex justify-between items-start mb-4">
+                <span className="p-2 bg-[var(--secondary)] rounded-lg">{icon}</span>
+                {/* Optional Sparkline or Badge could go here */}
             </div>
-            <div className="p-3 bg-slate-900/50 rounded-lg">
-                {icon}
+            <div>
+                <p className="text-[var(--muted-foreground)] text-sm font-medium uppercase tracking-wide">{title}</p>
+                <p className="text-3xl font-bold text-[var(--foreground)] mt-2">{value}</p>
+            </div>
+        </motion.div>
+    );
+}
+
+function HealthItem({ label, status, icon, color }: { label: string, status: string, icon: any, color: string }) {
+    return (
+        <div className="flex items-center justify-between p-3 bg-[var(--background)] rounded-lg border border-[var(--border)]">
+            <div className="flex items-center gap-3">
+                <div className={`p-1.5 rounded-full bg-[var(--secondary)] ${color}`}>
+                    {icon}
+                </div>
+                <span className="text-sm font-medium text-[var(--foreground)]">{label}</span>
+            </div>
+            <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${status === 'Operational' || status === 'Synced' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                <span className="text-xs font-semibold text-[var(--muted-foreground)]">{status}</span>
             </div>
         </div>
     );
