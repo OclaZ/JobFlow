@@ -7,7 +7,10 @@ import { useClerk } from "@clerk/nextjs";
 import {
     LayoutDashboard,
     LogOut,
-    Shield
+    Shield,
+    Users,
+    Briefcase,
+    Activity
 } from "lucide-react";
 
 export default function AdminSidebar() {
@@ -16,8 +19,9 @@ export default function AdminSidebar() {
 
     const links = [
         { href: "/admin/dashboard", label: "Overview", icon: LayoutDashboard },
-        // Future routes can be added here
-        // { href: "/admin/users", label: "Users", icon: Users },
+        { href: "/admin/users", label: "User Management", icon: Users },
+        { href: "/admin/offers", label: "Global Offers", icon: Briefcase },
+        { href: "/admin/analytics", label: "Analytics & System", icon: Activity },
     ];
 
     return (
