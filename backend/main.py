@@ -45,6 +45,18 @@ origins = [
     "https://simplonjob.online"
 ]
 
+from fastapi.responses import JSONResponse
+import traceback
+
+@app.exception_handler(Exception)
+async def debug_exception_handler(request: Request, exc: Exception):
+    error_msg = "".join(traceback.format_exception(None, exc, exc.__traceback__))
+    print(f"CRITICAL 500 ERROR: {error_msg}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal Server Error", "trace": error_msg},
+    )
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], # Allow all for now
