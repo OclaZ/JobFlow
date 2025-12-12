@@ -484,20 +484,57 @@ def delete_job_offer(db: Session, offer_id: int):
         db.commit()
         return True
     return False
+    return False
+
+def get_recent_system_activity(db: Session, limit: int = 15):
+    """
+    Fetches recent activity across the system: New Users, New Offers, New Applications.
+    Since we don't have a unified 'created_at' in all tables, we use ID desc as proxy for 'newest'.
+    """
+    users_list = []
+    offers_list = []
+    apps_list = []
+
+    # 1. New Users
+    users = db.query(models.User).order_by(models.User.id.desc()).limit(5).all()
+    for u in users:
+        users_list.append({
+            "id": f"u-{u.id}",
+            "text": f"New User Registered: {u.full_name or u.email.split('@')[0]}",
+            "time": "Recently",
+            "type": "user",
+            "icon_type": "user"
+        })
+
+    # 2. New Job Offers
+    offers = db.query(models.JobOffer).order_by(models.JobOffer.id.desc()).limit(5).all()
+    for o in offers:
+        offers_list.append({
+            "id": f"o-{o.id}",
+            "text": f"New Offer Added: {o.offer_title} at {o.platform}",
+            "time": str(o.save_date) if o.save_date else "Recently",
+            "type": "offer",
+            "icon_type": "briefcase"
+        })
+
+    # 3. New Applications
+    apps = db.query(models.Application).order_by(models.Application.id.desc()).limit(5).all()
+    for a in apps:
+        apps_list.append({
+            "id": f"a-{a.id}",
+            "text": f"Application: {a.position} @ {a.company}",
+            "time": str(a.dm_sent_date) if a.dm_sent_date else "Pending",
+            "type": "application",
+            "icon_type": "file-text"
+        })
     
-    # Daily Goal Logic (Apps today)
-    today = datetime.date.today()
-    apps_today = db.query(models.Application).filter(
-        models.Application.user_id == user_id, 
-        models.Application.dm_sent_date == today
-    ).count()
+    # Interleave
+    mixed = []
+    max_len = max(len(users_list), len(offers_list), len(apps_list))
+    for i in range(max_len):
+        if i < len(users_list): mixed.append(users_list[i])
+        if i < len(offers_list): mixed.append(offers_list[i])
+        if i < len(apps_list): mixed.append(apps_list[i])
     
-    return {
-        "id": user.id,
-        "full_name": user.full_name,
-        "email": user.email,
-        "total_applications": total_apps,
-        "total_offers": total_offers,
-        "apps_today": apps_today,
-        "recent_history": history
-    }
+    return mixed[:limit]
+

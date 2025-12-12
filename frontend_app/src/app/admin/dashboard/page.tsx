@@ -68,6 +68,7 @@ export default function AdminDashboard() {
     const [stats, setStats] = useState<any>(null); // Keeping as any for now to avoid strict typing overhead
     const [users, setUsers] = useState<any[]>([]);
     const [offers, setOffers] = useState<any[]>([]);
+    const [activities, setActivities] = useState<any[]>([]);
     const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
     const [selectedUserDetails, setSelectedUserDetails] = useState<any>(null); // NEW: Detailed fetch
     const [loading, setLoading] = useState(true);
@@ -91,14 +92,16 @@ export default function AdminDashboard() {
                     if (!res.ok) throw new Error((await res.json()).detail || `Error ${res.status}`);
                     return res.json();
                 };
-                const [statsData, usersData, offersData] = await Promise.all([
+                const [statsData, usersData, offersData, activityData] = await Promise.all([
                     authFetch("/admin/stats"),
                     authFetch("/admin/users"),
-                    authFetch("/admin/offers")
+                    authFetch("/admin/offers"),
+                    authFetch("/admin/activity")
                 ]);
                 setStats(statsData);
                 setUsers(usersData);
                 setOffers(offersData);
+                setActivities(activityData);
             } catch (err: any) { setError(err.message); } finally { setLoading(false); }
         };
         fetchData();
@@ -329,23 +332,30 @@ export default function AdminDashboard() {
                                 {/* Timeline Line */}
                                 <div className="absolute left-[11px] top-2 bottom-2 w-[2px] bg-secondary" />
 
-                                {[
-                                    { text: "User 'Sarah J.' applied to TechCorp", time: "2 min ago", icon: <FileText className="w-3 h-3 text-blue-500" /> },
-                                    { text: "New Job Offer: 'Frontend Dev' added", time: "15 min ago", icon: <Briefcase className="w-3 h-3 text-violet-500" /> },
-                                    { text: "User 'Mike' updated profile", time: "42 min ago", icon: <UserCheck className="w-3 h-3 text-green-500" /> },
-                                    { text: "System Backup Completed", time: "1 hr ago", icon: <Database className="w-3 h-3 text-slate-500" /> },
-                                    { text: "Recruiter response logged", time: "2 hrs ago", icon: <Search className="w-3 h-3 text-orange-500" /> },
-                                ].map((event, i) => (
-                                    <div key={i} className="relative flex items-center gap-4 z-10">
-                                        <div className="w-6 h-6 rounded-full bg-background border flex items-center justify-center shrink-0" style={{ borderColor: 'var(--border)' }}>
-                                            {event.icon}
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium leading-tight">{event.text}</p>
-                                            <p className="text-xs text-muted mt-0.5">{event.time}</p>
-                                        </div>
-                                    </div>
-                                ))}
+                                {activities && activities.length > 0 ? (
+                                    activities.map((event: any, i: number) => {
+                                        let Icon = FileText;
+                                        let colorClass = "text-blue-500";
+
+                                        if (event.icon_type === 'user') { Icon = UserCheck; colorClass = "text-green-500"; }
+                                        else if (event.icon_type === 'briefcase') { Icon = Briefcase; colorClass = "text-violet-500"; }
+                                        else if (event.icon_type === 'file-text') { Icon = FileText; colorClass = "text-blue-500"; }
+
+                                        return (
+                                            <div key={i} className="relative flex items-center gap-4 z-10">
+                                                <div className="w-6 h-6 rounded-full bg-background border flex items-center justify-center shrink-0" style={{ borderColor: 'var(--border)' }}>
+                                                    <Icon className={`w-3 h-3 ${colorClass}`} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-medium leading-tight">{event.text}</p>
+                                                    <p className="text-xs text-muted mt-0.5">{event.time}</p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                ) : (
+                                    <div className="text-center text-sm text-muted py-4">No recent activity found</div>
+                                )}
                             </div>
                         </motion.div>
 

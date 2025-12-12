@@ -490,3 +490,7 @@ def delete_offer_admin(offer_id: int, db: Session = Depends(get_db), current_use
     if not success:
         raise HTTPException(status_code=404, detail="Offer not found")
     return {"status": "success", "message": "Offer deleted"}
+
+@app.get("/admin/activity", response_model=List[admin_schemas.ActivityItem])
+def get_admin_activity(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_admin_user)):
+    return crud.get_recent_system_activity(db)

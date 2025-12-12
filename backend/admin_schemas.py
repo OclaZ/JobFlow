@@ -20,3 +20,10 @@ class AdminUserOverview(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ActivityItem(BaseModel):
+    id: str
+    text: str
+    time: str # "2 min ago", "2023-10-25", etc.
+    type: str # "user", "offer", "application"
+    icon_type: str # "user", "briefcase", "file-text"
