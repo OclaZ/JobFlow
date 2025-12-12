@@ -198,14 +198,12 @@ export default function AdminDashboard() {
 
     return (
         <motion.div
-            className="p-8 max-w-[1600px] mx-auto min-h-screen"
+            className="max-w-[1600px] mx-auto"
             initial="hidden"
             animate="visible"
         >
             {/* Header */}
-            {/* Header */}
-            {/* Header */}
-            <header className="flex flex-col md-flex-row justify-between items-start md-items-center mb-8 gap-4 p-6 rounded-2xl border bg-background/50 backdrop-blur-md sticky top-0 z-50 shadow-sm" style={{ borderColor: "var(--border)" }}>
+            <header className="flex flex-col md-flex-row justify-between items-start md-items-center mb-8 gap-4 rounded-xl">
                 <div>
                     <motion.h1
                         className="text-3xl font-bold flex items-center gap-3"
@@ -213,27 +211,16 @@ export default function AdminDashboard() {
                         initial={{ x: -20, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                     >
-                        <Shield className="w-8 h-8 text-primary" />
                         Admin Command Center
                     </motion.h1>
                     <p className="text-muted mt-2 text-sm">SimplonJob Global Ecosystem & Oversight</p>
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <div className="text-right hidden md-block">
+                    <div className="text-right hidden md-block px-4 py-2 bg-background border rounded-lg shadow-sm" style={{ borderColor: "var(--border)" }}>
                         <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>{user?.fullName || "Administrator"}</p>
                         <p className="text-xs text-muted flex items-center gap-1 justify-end"><div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div> Super Admin</p>
                     </div>
-                    <button
-                        onClick={async () => {
-                            await signOut();
-                            window.location.href = "/";
-                        }}
-                        className="p-3 bg-destructive/10 hover:bg-destructive/20 text-destructive rounded-xl transition-all"
-                        title="Secure Logout"
-                    >
-                        <LogOut className="w-5 h-5" />
-                    </button>
                 </div>
             </header>
 
