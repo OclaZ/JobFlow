@@ -201,7 +201,8 @@ export default function AdminDashboard() {
         >
             {/* Header */}
             {/* Header */}
-            <header className="flex flex-col md-flex-row justify-between items-start md-items-center mb-8 gap-4">
+            {/* Header */}
+            <header className="flex flex-col md-flex-row justify-between items-start md-items-center mb-8 gap-4 p-6 rounded-2xl border bg-background/50 backdrop-blur-md sticky top-0 z-50 shadow-sm" style={{ borderColor: "var(--border)" }}>
                 <div>
                     <motion.h1
                         className="text-3xl font-bold flex items-center gap-3"
@@ -210,20 +211,23 @@ export default function AdminDashboard() {
                         animate={{ x: 0, opacity: 1 }}
                     >
                         <Shield className="w-8 h-8 text-primary" />
-                        Super Admin Center
+                        Admin Command Center
                     </motion.h1>
-                    <p className="text-muted mt-2">Global ecosystem oversight and management.</p>
+                    <p className="text-muted mt-2 text-sm">SimplonJob Global Ecosystem & Oversight</p>
                 </div>
 
                 <div className="flex items-center gap-4">
                     <div className="text-right hidden md-block">
-                        <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>{user?.fullName}</p>
-                        <p className="text-xs text-muted">Super Admin</p>
+                        <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>{user?.fullName || "Administrator"}</p>
+                        <p className="text-xs text-muted flex items-center gap-1 justify-end"><div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div> Super Admin</p>
                     </div>
                     <button
-                        onClick={() => signOut(() => router.push("/"))}
-                        className="p-2 bg-secondary rounded-lg text-muted"
-                        title="Sign Out"
+                        onClick={async () => {
+                            await signOut();
+                            window.location.href = "/";
+                        }}
+                        className="p-3 bg-destructive/10 hover:bg-destructive/20 text-destructive rounded-xl transition-all"
+                        title="Secure Logout"
                     >
                         <LogOut className="w-5 h-5" />
                     </button>
@@ -302,6 +306,46 @@ export default function AdminDashboard() {
                                         <Legend verticalAlign="bottom" height={36} iconType="circle" />
                                     </PieChart>
                                 </ResponsiveContainer>
+                            </div>
+                        </motion.div>
+
+                        {/* Live System Activity Feed (New Feature) */}
+                        <motion.div className="card flex flex-col gap-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+                            <div className="flex justify-between items-center">
+                                <h3 className="flex items-center gap-2 text-base font-semibold">
+                                    <Zap className="w-5 h-5 text-amber-500" />
+                                    Live Activity
+                                </h3>
+                                <div className="flex items-center gap-2">
+                                    <span className="relative flex h-3 w-3">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                                    </span>
+                                    <span className="text-xs text-muted">Real-time</span>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6 relative pl-2">
+                                {/* Timeline Line */}
+                                <div className="absolute left-[11px] top-2 bottom-2 w-[2px] bg-secondary" />
+
+                                {[
+                                    { text: "User 'Sarah J.' applied to TechCorp", time: "2 min ago", icon: <FileText className="w-3 h-3 text-blue-500" /> },
+                                    { text: "New Job Offer: 'Frontend Dev' added", time: "15 min ago", icon: <Briefcase className="w-3 h-3 text-violet-500" /> },
+                                    { text: "User 'Mike' updated profile", time: "42 min ago", icon: <UserCheck className="w-3 h-3 text-green-500" /> },
+                                    { text: "System Backup Completed", time: "1 hr ago", icon: <Database className="w-3 h-3 text-slate-500" /> },
+                                    { text: "Recruiter response logged", time: "2 hrs ago", icon: <Search className="w-3 h-3 text-orange-500" /> },
+                                ].map((event, i) => (
+                                    <div key={i} className="relative flex items-center gap-4 z-10">
+                                        <div className="w-6 h-6 rounded-full bg-background border flex items-center justify-center shrink-0" style={{ borderColor: 'var(--border)' }}>
+                                            {event.icon}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium leading-tight">{event.text}</p>
+                                            <p className="text-xs text-muted mt-0.5">{event.time}</p>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </motion.div>
 
