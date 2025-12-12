@@ -479,3 +479,14 @@ def delete_user_admin(user_id: int, db: Session = Depends(get_db), current_user:
     if not success:
         raise HTTPException(status_code=404, detail="User not found")
     return {"message": "User deleted successfully"}
+
+@app.get("/admin/offers")
+def get_all_offers(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_admin_user)):
+    return crud.get_all_job_offers(db)
+
+@app.delete("/admin/offers/{offer_id}")
+def delete_offer_admin(offer_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_admin_user)):
+    success = crud.delete_job_offer(db, offer_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Offer not found")
+    return {"status": "success", "message": "Offer deleted"}

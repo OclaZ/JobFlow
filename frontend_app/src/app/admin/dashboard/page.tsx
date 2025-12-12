@@ -45,8 +45,8 @@ function AdminTabs({ activeTab, setActiveTab }: { activeTab: string, setActiveTa
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === tab.id
-                            ? "bg-primary text-white shadow-sm"
-                            : "text-muted hover:bg-secondary"
+                        ? "bg-primary text-white shadow-sm"
+                        : "text-muted hover:bg-secondary"
                         }`}
                     style={activeTab === tab.id ? { backgroundColor: "var(--primary)", color: "#fff" } : {}}
                 >
@@ -65,8 +65,9 @@ export default function AdminDashboard() {
 
     // State
     const [activeTab, setActiveTab] = useState("overview");
-    const [stats, setStats] = useState<any>(null);
+    const [stats, setStats] = useState<any>(null); // Keeping as any for now to avoid strict typing overhead
     const [users, setUsers] = useState<any[]>([]);
+    const [offers, setOffers] = useState<any[]>([]);
     const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
     const [selectedUserDetails, setSelectedUserDetails] = useState<any>(null); // NEW: Detailed fetch
     const [loading, setLoading] = useState(true);
@@ -90,9 +91,14 @@ export default function AdminDashboard() {
                     if (!res.ok) throw new Error((await res.json()).detail || `Error ${res.status}`);
                     return res.json();
                 };
-                const [statsData, usersData] = await Promise.all([authFetch("/admin/stats"), authFetch("/admin/users")]);
+                const [statsData, usersData, offersData] = await Promise.all([
+                    authFetch("/admin/stats"),
+                    authFetch("/admin/users"),
+                    authFetch("/admin/offers")
+                ]);
                 setStats(statsData);
                 setUsers(usersData);
+                setOffers(offersData);
             } catch (err: any) { setError(err.message); } finally { setLoading(false); }
         };
         fetchData();
@@ -439,8 +445,69 @@ export default function AdminDashboard() {
             )}
 
             {activeTab === "offers" && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-center items-center h-[400px] text-muted">
-                    <p>Global Offer Management Coming Soon...</p>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full">
+                    <div className="card h-full overflow-hidden flex flex-col">
+                        <div className="flex justify-between items-center mb-6">
+                            <div>
+                                <h2 className="text-xl font-bold">Global Offer Management</h2>
+                                <p className="text-muted text-sm">View and manage all job offers across the platform.</p>
+                            </div>
+                            <div className="p-2 bg-secondary rounded text-sm text-muted">
+                                Total Offers: {offers.length}
+                            </div>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto border rounded-xl" style={{ borderColor: "var(--border)" }}>
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-secondary text-muted sticky top-0 z-10">
+                                    <tr>
+                                        <th className="p-4">Company</th>
+                                        <th className="p-4">Position</th>
+                                        <th className="p-4">Owner (Email)</th>
+                                        <th className="p-4">Status</th>
+                                        <th className="p-4">Date</th>
+                                        <th className="p-4 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
+                                    {offers.length > 0 ? (
+                                        offers.map((offer) => (
+                                            <tr key={offer.id} className="hover:bg-secondary/50">
+                                                <td className="p-4 font-semibold">{offer.company_name}</td>
+                                                <td className="p-4">{offer.position_title}</td>
+                                                <td className="p-4 text-muted">{offer.user_email}</td>
+                                                <td className="p-4">
+                                                    <span className={`px-2 py-1 rounded text-xs ${offer.status === 'Applied' ? 'bg-blue-100 text-blue-700' :
+                                                            offer.status === 'Interview' ? 'bg-amber-100 text-amber-700' :
+                                                                offer.status === 'Offer' ? 'bg-green-100 text-green-700' :
+                                                                    offer.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                                                                        'bg-gray-100 text-gray-700'
+                                                        }`}>{offer.status}</span>
+                                                </td>
+                                                <td className="p-4 text-muted">{offer.created_at || "N/A"}</td>
+                                                <td className="p-4 text-right">
+                                                    <button
+                                                        onClick={() => handleDeleteOffer(offer.id)}
+                                                        className="p-2 hover:bg-destructive/10 text-destructive rounded transition-colors"
+                                                        title="Delete Offer"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={6} className="p-8 text-center text-muted">
+                                                <Briefcase className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                                                No job offers found in the system.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </motion.div>
             )}
 

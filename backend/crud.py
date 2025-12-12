@@ -431,6 +431,60 @@ def get_user_detailed_stats(db: Session, user_id: int):
             "status": app.final_status
         })
     
+    # Also fetch recent offers
+    recent_offers = db.query(models.JobOffer).filter(models.JobOffer.user_id == user_id).order_by(models.JobOffer.id.desc()).limit(10).all()
+    for offer in recent_offers:
+        history.append({
+            "type": "Offer",
+            "target": f"{offer.company_name} - {offer.position_title}",
+            "date": offer.application_date or "N/A",
+            "status": offer.status
+        })
+        
+    return {
+        "id": user.id,
+        "email": user.email,
+        "full_name": user.full_name,
+        "total_applications": total_apps,
+        "total_offers": total_offers,
+        "apps_today": 0, # TODO: Calculate real daily apps
+        "recent_history": history
+    }
+
+def get_all_job_offers(db: Session, limit: int = 100):
+    try:
+        offers = db.query(models.JobOffer).join(models.User).order_by(models.JobOffer.id.desc()).limit(limit).all()
+        # Join to get user info if relationship exists, or manual fetch
+        # Assuming eager load or lazy load works, or manual construction
+        result = []
+        for o in offers:
+            # Safely access user
+            user_email = "Unknown"
+            if o.owner:
+                user_email = o.owner.email
+                
+            result.append({
+                "id": o.id,
+                "company_name": o.company_name,
+                "position_title": o.position_title,
+                "status": o.status,
+                "salary_range": o.salary_range,
+                "user_email": user_email,
+                "created_at": o.application_date # Using application_date as proxy for created
+            })
+        return result
+    except Exception as e:
+        print(f"Error fetching all offers: {e}")
+        return []
+
+def delete_job_offer(db: Session, offer_id: int):
+    offer = db.query(models.JobOffer).filter(models.JobOffer.id == offer_id).first()
+    if offer:
+        db.delete(offer)
+        db.commit()
+        return True
+    return False
+    
     # Daily Goal Logic (Apps today)
     today = datetime.date.today()
     apps_today = db.query(models.Application).filter(

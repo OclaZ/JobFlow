@@ -7,6 +7,8 @@ import { motion } from "framer-motion";
 import { useLanguage } from "@/components/LanguageProvider";
 import { ApplicationFunnel } from "@/components/ApplicationFunnel";
 import { ActivityHeatmap } from "@/components/ActivityHeatmap";
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 interface Stats {
     total_dm_sent: number;
@@ -25,15 +27,28 @@ export default function DashboardPage() {
     const [stats, setStats] = useState<Stats | null>(null);
     const [loading, setLoading] = useState(true);
     const { t } = useLanguage();
+    const { user } = useUser();
+    const router = useRouter(); // Use App Router's useRouter
 
     useEffect(() => {
-        apiRequest("/dashboard/stats")
-            .then(setStats)
-            .catch(console.error)
-            .finally(() => setLoading(false));
-    }, []);
+        // Super Admin Redirect (Strict)
+        if (user?.primaryEmailAddress?.emailAddress === "hello@hamzaaslikh.com") {
+            router.push("/admin/dashboard");
+            return;
+        }
 
-    if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>;
+        if (user) { // Only fetch if user is loaded
+            apiRequest("/dashboard/stats")
+                .then(setStats)
+                .catch(console.error)
+                .finally(() => setLoading(false));
+        }
+    }, [user, router]);
+
+    // If redirected, or loading, show spinner/nothing
+    if (loading || user?.primaryEmailAddress?.emailAddress === "hello@hamzaaslikh.com") {
+        return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>;
+    }
 
     const containerVariants = {
         hidden: { opacity: 0 },
