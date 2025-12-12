@@ -149,6 +149,23 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleDeleteOffer = async (id: number) => {
+        if (!confirm("Are you sure you want to delete this job offer?")) return;
+        try {
+            const token = await getToken();
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://job-flow-psi.vercel.app";
+            const res = await fetch(`${API_URL}/admin/offers/${id}`, {
+                method: "DELETE",
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error("Failed to delete offer");
+            setOffers(prev => prev.filter(o => o.id !== id));
+        } catch (e: any) {
+            console.error("Delete offer failed", e);
+            alert("Error deleting offer.");
+        }
+    };
+
     if (!isLoaded || loading) {
         return (
             <div className="flex justify-center items-center h-screen bg-[var(--background)]">
@@ -478,10 +495,10 @@ export default function AdminDashboard() {
                                                 <td className="p-4 text-muted">{offer.user_email}</td>
                                                 <td className="p-4">
                                                     <span className={`px-2 py-1 rounded text-xs ${offer.status === 'Applied' ? 'bg-blue-100 text-blue-700' :
-                                                            offer.status === 'Interview' ? 'bg-amber-100 text-amber-700' :
-                                                                offer.status === 'Offer' ? 'bg-green-100 text-green-700' :
-                                                                    offer.status === 'Rejected' ? 'bg-red-100 text-red-700' :
-                                                                        'bg-gray-100 text-gray-700'
+                                                        offer.status === 'Interview' ? 'bg-amber-100 text-amber-700' :
+                                                            offer.status === 'Offer' ? 'bg-green-100 text-green-700' :
+                                                                offer.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                                                                    'bg-gray-100 text-gray-700'
                                                         }`}>{offer.status}</span>
                                                 </td>
                                                 <td className="p-4 text-muted">{offer.created_at || "N/A"}</td>
