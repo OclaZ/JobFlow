@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth, useUser } from "@clerk/nextjs";
+import { useAuth, useUser, useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -36,6 +36,7 @@ function AdminTabs({ activeTab, setActiveTab }: { activeTab: string, setActiveTa
         { id: "overview", label: "Overview", icon: <Activity className="w-4 h-4" /> },
         { id: "users", label: "User Management", icon: <Users className="w-4 h-4" /> },
         { id: "offers", label: "Global Offers", icon: <Briefcase className="w-4 h-4" /> },
+        { id: "analytics", label: "Analytics & System", icon: <Server className="w-4 h-4" /> },
     ];
 
     return (
@@ -59,7 +60,8 @@ function AdminTabs({ activeTab, setActiveTab }: { activeTab: string, setActiveTa
 }
 
 export default function AdminDashboard() {
-    const { isLoaded, userId, getToken, signOut } = useAuth();
+    const { isLoaded, userId, getToken } = useAuth();
+    const { signOut } = useClerk(); // Correct hook for signOut
     const { user } = useUser();
     const router = useRouter();
 
@@ -69,6 +71,9 @@ export default function AdminDashboard() {
     const [users, setUsers] = useState<any[]>([]);
     const [offers, setOffers] = useState<any[]>([]);
     const [activities, setActivities] = useState<any[]>([]);
+    const [topCompanies, setTopCompanies] = useState<any[]>([]);
+    const [systemHealth, setSystemHealth] = useState<any>(null);
+
     const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
     const [selectedUserDetails, setSelectedUserDetails] = useState<any>(null); // NEW: Detailed fetch
     const [loading, setLoading] = useState(true);
@@ -92,16 +97,20 @@ export default function AdminDashboard() {
                     if (!res.ok) throw new Error((await res.json()).detail || `Error ${res.status}`);
                     return res.json();
                 };
-                const [statsData, usersData, offersData, activityData] = await Promise.all([
+                const [statsData, usersData, offersData, activityData, companiesData, healthData] = await Promise.all([
                     authFetch("/admin/stats"),
                     authFetch("/admin/users"),
                     authFetch("/admin/offers"),
-                    authFetch("/admin/activity")
+                    authFetch("/admin/activity"),
+                    authFetch("/admin/analytics/top-companies"),
+                    authFetch("/admin/system/health")
                 ]);
                 setStats(statsData);
                 setUsers(usersData);
                 setOffers(offersData);
                 setActivities(activityData);
+                setTopCompanies(companiesData);
+                setSystemHealth(healthData);
             } catch (err: any) { setError(err.message); } finally { setLoading(false); }
         };
         fetchData();
@@ -564,6 +573,83 @@ export default function AdminDashboard() {
                                     )}
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                </motion.div>
+            )}
+
+            {activeTab === "analytics" && (
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="grid grid-cols-1 md-grid-cols-2 gap-8">
+                    {/* Top Companies Leaderboard */}
+                    <div className="card">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 bg-blue-100 rounded-lg">
+                                <Building className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <h3 className="text-xl font-bold">Top Target Companies</h3>
+                        </div>
+                        <div className="space-y-4">
+                            {topCompanies.length > 0 ? (
+                                topCompanies.map((company: any, index: number) => (
+                                    <div key={index} className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary transition-colors border" style={{ borderColor: "var(--border)" }}>
+                                        <div className="flex items-center gap-4">
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${index === 0 ? "bg-yellow-100 text-yellow-700" :
+                                                index === 1 ? "bg-gray-100 text-gray-700" :
+                                                    index === 2 ? "bg-orange-100 text-orange-700" :
+                                                        "bg-blue-50 text-blue-600"
+                                                }`}>
+                                                {index + 1}
+                                            </div>
+                                            <span className="font-semibold">{company.name}</span>
+                                        </div>
+                                        <div className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+                                            {company.count} Apps
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-muted text-center py-8">Not enough data yet.</p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* System Health & Tools */}
+                    <div className="flex flex-col gap-8">
+                        {/* Health Status */}
+                        <div className="card border-l-4" style={{ borderLeftColor: systemHealth?.status === 'healthy' ? '#22c55e' : '#ef4444' }}>
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-xl font-bold flex items-center gap-2">
+                                    <Server className="w-5 h-5" />
+                                    System Status
+                                </h3>
+                                <span className={`px-3 py-1 rounded-full text-sm font-bold uppercase ${systemHealth?.status === 'healthy' ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                                    }`}>
+                                    {systemHealth?.status || "Checking..."}
+                                </span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="p-4 bg-secondary rounded-lg text-center">
+                                    <p className="text-sm text-muted mb-1">Database Latency</p>
+                                    <p className="text-2xl font-mono font-bold">{systemHealth?.db_latency_ms || 0}<span className="text-sm font-normal text-muted ml-1">ms</span></p>
+                                </div>
+                                <div className="p-4 bg-secondary rounded-lg text-center">
+                                    <p className="text-sm text-muted mb-1">Server Time</p>
+                                    <p className="text-lg font-mono font-bold">{new Date(systemHealth?.timestamp * 1000).toLocaleTimeString() || "..."}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Data Export Tools */}
+                        <div className="card">
+                            <h3 className="text-xl font-bold flex items-center gap-2 mb-4">
+                                <Database className="w-5 h-5" />
+                                Data Export
+                            </h3>
+                            <button className="w-full py-3 border border-dashed border-primary text-primary hover:bg-primary/5 rounded-lg flex items-center justify-center gap-2 transition-all">
+                                <FileText className="w-4 h-4" />
+                                Download User List (CSV)
+                            </button>
+                            <p className="text-xs text-muted mt-2 text-center">Generates a generic CSV report of all registered users.</p>
                         </div>
                     </div>
                 </motion.div>

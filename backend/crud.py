@@ -538,3 +538,38 @@ def get_recent_system_activity(db: Session, limit: int = 15):
     
     return mixed[:limit]
 
+
+def get_top_companies(db: Session, limit: int = 5):
+    """
+    Returns the top companies users are applying to.
+    """
+    from sqlalchemy import func
+    results = db.query(models.Application.company, func.count(models.Application.id).label('count')) \
+        .group_by(models.Application.company) \
+        .order_by(func.count(models.Application.id).desc()) \
+        .limit(limit) \
+        .all()
+    
+    return [{"name": r[0], "count": r[1]} for r in results]
+
+def check_system_health(db: Session):
+    """
+    Checks DB latency and returns system status.
+    """
+    import time
+    start_time = time.time()
+    try:
+        db.execute("SELECT 1")
+        latency_ms = (time.time() - start_time) * 1000
+        return {
+            "status": "healthy",
+            "db_latency_ms": round(latency_ms, 2),
+            "timestamp": time.time()
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "error": str(e),
+            "timestamp": time.time()
+        }
+

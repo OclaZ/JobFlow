@@ -494,3 +494,11 @@ def delete_offer_admin(offer_id: int, db: Session = Depends(get_db), current_use
 @app.get("/admin/activity", response_model=List[admin_schemas.ActivityItem])
 def get_admin_activity(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_admin_user)):
     return crud.get_recent_system_activity(db)
+
+@app.get("/admin/analytics/top-companies")
+def get_top_companies_analytics(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_admin_user)):
+    return crud.get_top_companies(db)
+
+@app.get("/admin/system/health")
+def get_system_health(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_admin_user)):
+    return crud.check_system_health(db)
